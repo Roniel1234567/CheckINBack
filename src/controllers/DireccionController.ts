@@ -41,12 +41,46 @@ export const getDireccionById = async (req: Request, res: Response): Promise<Res
 
 export const createDireccion = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const newDireccion = direccionRepository.create(req.body);
+        console.log('BODY QUE LLEGA:', JSON.stringify(req.body, null, 2));
+
+        // Verificar que sector_dir existe
+        if (!req.body.sector_dir) {
+            return res.status(400).json({
+                message: 'El sector es requerido',
+                error: 'sector_dir no puede ser nulo'
+            });
+        }
+
+        // Intentar obtener el sector de la base de datos
+        const sector = await AppDataSource.getRepository('Sector').findOne({
+            where: { id_sec: req.body.sector_dir }
+        });
+
+        if (!sector) {
+            return res.status(400).json({
+                message: 'Sector no encontrado',
+                error: `No existe un sector con ID: ${req.body.sector_dir}`
+            });
+        }
+
+        console.log('SECTOR ENCONTRADO:', sector);
+
+        const newDireccion = direccionRepository.create({
+            ...req.body,
+            sector_dir: sector
+        });
+
+        console.log('NUEVA DIRECCIÓN A CREAR:', newDireccion);
         const savedDireccion = await direccionRepository.save(newDireccion);
+        console.log('DIRECCIÓN GUARDADA:', savedDireccion);
+
         return res.status(201).json(savedDireccion);
     } catch (error) {
-        console.error('Error al crear dirección:', error);
-        return res.status(500).json({ message: 'Error interno del servidor' });
+        console.error('Error detallado al crear dirección:', error);
+        return res.status(500).json({ 
+            message: 'Error al crear la dirección',
+            error: error instanceof Error ? error.message : 'Error desconocido'
+        });
     }
 };
 

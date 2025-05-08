@@ -42,7 +42,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Update with your frontend URL
+  origin: process.env.NODE_ENV === 'development' ? true : 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -95,11 +95,11 @@ app.get('/api/ciudades/provincia/:provinciaId', async (req, res) => {
     
     console.log('Ciudades encontradas:', ciudades); // Debug log
     res.json(ciudades);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error detallado:', error);
     res.status(500).json({ 
       message: 'Error interno del servidor',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? (error && error.message ? error.message : String(error)) : undefined
     });
   }
 });
@@ -138,11 +138,19 @@ app.get('/api/estudiantes', async (req, res) => {
 });
 
 // Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err);
+  let errorMessage: string | undefined = undefined;
+  if (process.env.NODE_ENV === 'development') {
+    if (err && typeof err === 'object' && 'message' in err) {
+      errorMessage = (err as any).message;
+    } else {
+      errorMessage = String(err);
+    }
+  }
   res.status(500).json({
     message: 'Error interno del servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: errorMessage
   });
 });
 

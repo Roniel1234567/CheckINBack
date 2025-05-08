@@ -51,7 +51,9 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
     await queryRunner.startTransaction();
 
     try {
-        const { nombre_centro, direccion, contacto } = req.body;
+        const nombre_centro = req.body.nombre_centro;
+        const direccion = req.body.direccion || req.body.direccion_centro;
+        const contacto = req.body.contacto || req.body.contacto_centro;
 
         if (!nombre_centro || !direccion || !contacto) {
             return res.status(400).json({ 
@@ -59,7 +61,7 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
                 required: {
                     nombre_centro: 'string',
                     direccion: {
-                        sector_dir: 'number',
+                        sector_dir: 'number (requerido)',
                         calle_dir: 'string',
                         num_res_dir: 'string'
                     },
@@ -68,6 +70,13 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
                         email_contacto: 'string'
                     }
                 }
+            });
+        }
+
+        if (!direccion.sector_dir) {
+            return res.status(400).json({
+                message: 'El sector es requerido',
+                error: 'sector_dir no puede ser nulo'
             });
         }
 
