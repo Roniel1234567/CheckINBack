@@ -73,15 +73,14 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             });
         }
 
-        if (!direccion.sector_dir) {
-            return res.status(400).json({
-                message: 'El sector es requerido',
-                error: 'sector_dir no puede ser nulo'
-            });
+        const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: direccion.sector_dir } });
+        if (!sector) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Sector no encontrado' });
         }
 
         const newDireccion = queryRunner.manager.create(Direccion, {
-            sector_dir: direccion.sector_dir,
+            sector_dir: sector,
             calle_dir: direccion.calle_dir,
             num_res_dir: direccion.num_res_dir,
             estado_dir: 'Activo'

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Direccion } from '../models/Direccion';
+import { Sector } from '../models/Sector';
 
 const direccionRepository = AppDataSource.getRepository(Direccion);
 
@@ -41,46 +42,20 @@ export const getDireccionById = async (req: Request, res: Response): Promise<Res
 
 export const createDireccion = async (req: Request, res: Response): Promise<Response> => {
     try {
-        console.log('BODY QUE LLEGA:', JSON.stringify(req.body, null, 2));
-
-        // Verificar que sector_dir existe
-        if (!req.body.sector_dir) {
-            return res.status(400).json({
-                message: 'El sector es requerido',
-                error: 'sector_dir no puede ser nulo'
-            });
+        const { sector_dir, ...rest } = req.body;
+        if (!sector_dir) {
+            return res.status(400).json({ message: 'El sector es requerido' });
         }
-
-        // Intentar obtener el sector de la base de datos
-        const sector = await AppDataSource.getRepository('Sector').findOne({
-            where: { id_sec: req.body.sector_dir }
-        });
-
+        const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: sector_dir } });
         if (!sector) {
-            return res.status(400).json({
-                message: 'Sector no encontrado',
-                error: `No existe un sector con ID: ${req.body.sector_dir}`
-            });
+            return res.status(400).json({ message: 'Sector no encontrado' });
         }
-
-        console.log('SECTOR ENCONTRADO:', sector);
-
-        const newDireccion = direccionRepository.create({
-            ...req.body,
-            sector_dir: sector
-        });
-
-        console.log('NUEVA DIRECCIÓN A CREAR:', newDireccion);
+        const newDireccion = direccionRepository.create({ ...rest, sector_dir: sector });
         const savedDireccion = await direccionRepository.save(newDireccion);
-        console.log('DIRECCIÓN GUARDADA:', savedDireccion);
-
         return res.status(201).json(savedDireccion);
     } catch (error) {
-        console.error('Error detallado al crear dirección:', error);
-        return res.status(500).json({ 
-            message: 'Error al crear la dirección',
-            error: error instanceof Error ? error.message : 'Error desconocido'
-        });
+        console.error('Error al crear dirección:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
 
