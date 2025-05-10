@@ -49,6 +49,21 @@ export class Estudiante {
   @JoinColumn({ name: 'ciclo_escolar_est' })
   ciclo_escolar_est: CicloEscolar;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  horaspasrealizadas_est?: number;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  nombre_poliza?: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  numero_poliza?: string;
+
+  @Column({ type: 'date', nullable: true })
+  fecha_inicio_pasantia?: Date;
+
+  @Column({ type: 'date', nullable: true })
+  fecha_fin_pasantia?: Date;
+
   @CreateDateColumn({ type: 'timestamp' })
   creacion_est: Date;
 
@@ -65,7 +80,13 @@ export class Estudiante {
     this.direccion_id = new Direccion();
     this.ciclo_escolar_est = new CicloEscolar();
     this.creacion_est = new Date();
-    // Create a new Taller instance with the required parameters
     this.taller_est = new Taller('', '', new FamiliaProfesional());
+    
+    // Inicialización de campos de pasantía y póliza
+    this.horaspasrealizadas_est = 0;
+    this.nombre_poliza = '';
+    this.numero_poliza = '';
+    this.fecha_inicio_pasantia = undefined;
+    this.fecha_fin_pasantia = undefined;
   }
 }

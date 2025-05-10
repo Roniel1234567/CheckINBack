@@ -8,6 +8,10 @@ import { CentroDeTrabajo } from "./models/CentroDeTrabajo";
 import { Contacto } from "./models/Contacto";
 import { Direccion } from "./models/Direccion";
 import { FamiliaProfesional } from "./models/familia_profecional";
+import { Estudiante } from "./models/Estudiante";
+import { Usuario } from "./models/User";
+import { CicloEscolar } from "./models/CicloEscolar";
+import { Rol } from "./models/Rol";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -29,7 +33,11 @@ export const AppDataSource = new DataSource({
         CentroDeTrabajo,
         Contacto,
         Direccion,
-        FamiliaProfesional
+        FamiliaProfesional,
+        Estudiante,
+        Usuario,
+        CicloEscolar,
+        Rol
     ],
     migrations: [],
     subscribers: []

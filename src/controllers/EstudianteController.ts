@@ -18,7 +18,7 @@ export const getAllEstudiantes = async (_req: Request, res: Response): Promise<R
 
 export const getEstudianteById = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const id = req.params.id;
+        const { id } = req.params;
         const estudiante = await estudianteRepository.findOne({
             where: { documento_id_est: id },
             relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est']
@@ -37,9 +37,35 @@ export const getEstudianteById = async (req: Request, res: Response): Promise<Re
 
 export const createEstudiante = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const newEstudiante = estudianteRepository.create(req.body);
-        const savedEstudiante = await estudianteRepository.save(newEstudiante);
-        return res.status(201).json(savedEstudiante);
+        const estudianteData = req.body;
+        
+        // Validar campos requeridos
+        const camposRequeridos = ['documento_id_est', 'nombre_est', 'apellido_est', 'fecha_nac_est'];
+        const camposFaltantes = camposRequeridos.filter(campo => !estudianteData[campo]);
+        
+        if (camposFaltantes.length > 0) {
+            return res.status(400).json({
+                message: 'Campos requeridos faltantes',
+                campos: camposFaltantes
+            });
+        }
+
+        // Verificar si el estudiante ya existe
+        const estudianteExistente = await estudianteRepository.findOne({
+            where: { documento_id_est: estudianteData.documento_id_est }
+        });
+
+        if (estudianteExistente) {
+            return res.status(400).json({ message: 'Ya existe un estudiante con este documento' });
+        }
+
+        const nuevoEstudiante = estudianteRepository.create(estudianteData);
+        await estudianteRepository.save(nuevoEstudiante);
+
+        return res.status(201).json({
+            message: 'Estudiante creado exitosamente',
+            estudiante: nuevoEstudiante
+        });
     } catch (error) {
         console.error('Error al crear estudiante:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
@@ -48,7 +74,9 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
 
 export const updateEstudiante = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const id = req.params.id;
+        const { id } = req.params;
+        const estudianteData = req.body;
+
         const estudiante = await estudianteRepository.findOne({
             where: { documento_id_est: id }
         });
@@ -57,9 +85,14 @@ export const updateEstudiante = async (req: Request, res: Response): Promise<Res
             return res.status(404).json({ message: 'Estudiante no encontrado' });
         }
 
-        estudianteRepository.merge(estudiante, req.body);
-        const updatedEstudiante = await estudianteRepository.save(estudiante);
-        return res.status(200).json(updatedEstudiante);
+        // Actualizar solo los campos proporcionados
+        Object.assign(estudiante, estudianteData);
+        await estudianteRepository.save(estudiante);
+
+        return res.status(200).json({
+            message: 'Estudiante actualizado exitosamente',
+            estudiante
+        });
     } catch (error) {
         console.error('Error al actualizar estudiante:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
@@ -68,14 +101,20 @@ export const updateEstudiante = async (req: Request, res: Response): Promise<Res
 
 export const deleteEstudiante = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const id = req.params.id;
-        const result = await estudianteRepository.delete(id);
-        
-        if (result.affected === 0) {
+        const { id } = req.params;
+        const estudiante = await estudianteRepository.findOne({
+            where: { documento_id_est: id }
+        });
+
+        if (!estudiante) {
             return res.status(404).json({ message: 'Estudiante no encontrado' });
         }
 
-        return res.status(204).send();
+        await estudianteRepository.remove(estudiante);
+
+        return res.status(200).json({
+            message: 'Estudiante eliminado exitosamente'
+        });
     } catch (error) {
         console.error('Error al eliminar estudiante:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });

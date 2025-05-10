@@ -26,6 +26,7 @@ import pasantiaRoutes from './routes/PasantiaRoutes';
 import plazasCentroRoutes from './routes/PlazasdeCentroRoutes';
 import supervisorRoutes from './routes/SupervisorRoutes';
 import tallerRoutes from './routes/TallerRoutes';
+import tallerCentroRoutes from './routes/tallerCentroroutes';
 import tutorRoutes from './routes/TutorRoutes';
 
 // Location routes
@@ -75,6 +76,7 @@ app.use('/api/pasantias', pasantiaRoutes);
 app.use('/api/plazas', plazasCentroRoutes);
 app.use('/api/supervisores', supervisorRoutes);
 app.use('/api/talleres', tallerRoutes);
+app.use('/api/taller-centro', tallerCentroRoutes);
 app.use('/api/tutores', tutorRoutes);
 
 // Location routes
