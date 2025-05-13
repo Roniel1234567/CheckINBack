@@ -64,6 +64,9 @@ export class Estudiante {
   @Column({ type: 'date', nullable: true })
   fecha_fin_pasantia?: Date;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  nacionalidad?: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   creacion_est: Date;
 
