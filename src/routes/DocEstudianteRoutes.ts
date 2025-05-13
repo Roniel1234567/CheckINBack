@@ -7,8 +7,10 @@ import {
     deleteDocEstudiante,
     getArchivoEstudiante
 } from '../controllers/DocEstudianteController';
+import multer from 'multer';
 
 const router = Router();
+const upload = multer();
 
 // Obtener todos los documentos de estudiantes
 router.get('/', async (req: Request, res: Response) => {
@@ -25,8 +27,16 @@ router.post('/', async (req: Request, res: Response) => {
     await createDocEstudiante(req, res);
 });
 
-// Actualizar documento
-router.put('/:id', async (req: Request, res: Response) => {
+// Actualizar documento (con soporte para archivos)
+router.put('/:id', upload.fields([
+  { name: 'id_doc_file', maxCount: 1 },
+  { name: 'cv_doc_file', maxCount: 1 },
+  { name: 'anexo_iv_doc_file', maxCount: 1 },
+  { name: 'anexo_v_doc_file', maxCount: 1 },
+  { name: 'acta_nac_doc_file', maxCount: 1 },
+  { name: 'ced_padres_doc_file', maxCount: 1 },
+  { name: 'vac_covid_doc_file', maxCount: 1 }
+]), async (req: Request, res: Response) => {
     await updateDocEstudiante(req, res);
 });
 

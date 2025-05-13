@@ -50,7 +50,22 @@ export const updateDocEstudiante = async (req: Request, res: Response) => {
         const { id } = req.params;
         const doc = await docEstudianteRepository.findOne({ where: { est_doc: id } });
         if (!doc) return res.status(404).json({ message: 'Documento de estudiante no encontrado' });
+
+        // Procesar archivos si existen
+        if ((req as any).files) {
+            const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] };
+            if (files.id_doc_file) doc.ced_est = files.id_doc_file[0].buffer;
+            if (files.cv_doc_file) doc.cv_doc = files.cv_doc_file[0].buffer;
+            if (files.anexo_iv_doc_file) doc.anexo_iv_doc = files.anexo_iv_doc_file[0].buffer;
+            if (files.anexo_v_doc_file) doc.anexo_v_doc = files.anexo_v_doc_file[0].buffer;
+            if (files.acta_nac_doc_file) doc.acta_nac_doc = files.acta_nac_doc_file[0].buffer;
+            if (files.ced_padres_doc_file) doc.ced_padres_doc = files.ced_padres_doc_file[0].buffer;
+            if (files.vac_covid_doc_file) doc.vac_covid_doc = files.vac_covid_doc_file[0].buffer;
+        }
+
+        // Si quieres, puedes seguir usando merge para otros campos del body
         docEstudianteRepository.merge(doc, req.body);
+
         await docEstudianteRepository.save(doc);
         return res.json(doc);
     } catch (error) {
@@ -84,10 +99,15 @@ export const getArchivoEstudiante = async (req: Request, res: Response) => {
         if (!docEst || !archivo) {
             return res.status(404).json({ message: 'Archivo no encontrado' });
         }
-        // Puedes mejorar el Content-Type según el tipo real de archivo
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename=${tipo}_${id}.pdf`);
+
+        // Si todos tus archivos son PDF, usa este Content-Type:
+        res.setHeader('Content-Type', 'application/pdf');
+        // Para abrir en el navegador y permitir descarga con nombre amigable:
+        res.setHeader('Content-Disposition', `inline; filename=${tipo}_${id}.pdf`);
         return res.send(archivo);
+
+        // Si quieres forzar la descarga, usa:
+        // res.setHeader('Content-Disposition', `attachment; filename=${tipo}_${id}.pdf`);
     } catch (error) {
         console.error('Error al obtener archivo:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
