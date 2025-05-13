@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Estudiante } from '../models/Estudiante';
+import { DocEstudiante } from '../models/DocEstudiante';
 
 const estudianteRepository = AppDataSource.getRepository(Estudiante);
 
@@ -63,6 +64,12 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
             });
         }
 
+        // Validar y limpiar el campo documento_id_est
+        if (typeof estudianteData.documento_id_est !== 'string' || !estudianteData.documento_id_est.trim()) {
+            return res.status(400).json({ message: 'El campo documento_id_est es obligatorio y no puede estar vacío.' });
+        }
+        estudianteData.documento_id_est = estudianteData.documento_id_est.trim();
+
         // Verificar si el estudiante ya existe
         const estudianteExistente = await estudianteRepository.findOne({
             where: { documento_id_est: estudianteData.documento_id_est }
@@ -72,12 +79,27 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
             return res.status(400).json({ message: 'Ya existe un estudiante con este documento' });
         }
 
-        const nuevoEstudiante = estudianteRepository.create(estudianteData);
-        await estudianteRepository.save(nuevoEstudiante);
+        const estudiante = await estudianteRepository.save(estudianteData);
+        const documentoId = estudiante.documento_id_est?.trim();
+
+        if (!documentoId) {
+            throw new Error('El documento del estudiante no puede estar vacío');
+        }
+
+        const docEstudianteRepository = AppDataSource.getRepository(DocEstudiante);
+        const docEstudianteExistente = await docEstudianteRepository.findOne({
+            where: { est_doc: documentoId }
+        });
+        if (!docEstudianteExistente) {
+            const nuevoDocEstudiante = docEstudianteRepository.create({
+                est_doc: documentoId
+            });
+            await docEstudianteRepository.save(nuevoDocEstudiante);
+        }
 
         return res.status(201).json({
             message: 'Estudiante creado exitosamente',
-            estudiante: nuevoEstudiante
+            estudiante
         });
     } catch (error) {
         console.error('Error al crear estudiante:', error);
