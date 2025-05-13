@@ -4,7 +4,8 @@ import {
     getUserById,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserByUsername
 } from '../controllers/userController';
 
 const router = Router();
@@ -32,6 +33,11 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Delete user
 router.delete('/:id', async (req: Request, res: Response) => {
     await deleteUser(req, res);
+});
+
+// Buscar usuario por nombre de usuario
+router.get('/buscar/:username', async (req: Request, res: Response) => {
+    await getUserByUsername(req, res);
 });
 
 export default router;

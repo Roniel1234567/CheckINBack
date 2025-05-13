@@ -36,9 +36,22 @@ export const getEstudianteById = async (req: Request, res: Response): Promise<Re
 };
 
 export const createEstudiante = async (req: Request, res: Response): Promise<Response> => {
+    console.log('BODY QUE LLEGA:', req.body);
     try {
         const estudianteData = req.body;
-        
+
+        // Mapea los campos relacionales a objetos con id
+        if (estudianteData.usuario_est)
+            estudianteData.usuario_est = { id_usuario: Number(estudianteData.usuario_est) };
+        if (estudianteData.contacto_est)
+            estudianteData.contacto_est = { id_contacto: Number(estudianteData.contacto_est) };
+        if (estudianteData.taller_est)
+            estudianteData.taller_est = { id_taller: Number(estudianteData.taller_est) };
+        if (estudianteData.direccion_id)
+            estudianteData.direccion_id = { id_dir: Number(estudianteData.direccion_id) };
+        if (estudianteData.ciclo_escolar_est)
+            estudianteData.ciclo_escolar_est = { id_ciclo: Number(estudianteData.ciclo_escolar_est) };
+
         // Validar campos requeridos
         const camposRequeridos = ['documento_id_est', 'nombre_est', 'apellido_est', 'fecha_nac_est'];
         const camposFaltantes = camposRequeridos.filter(campo => !estudianteData[campo]);

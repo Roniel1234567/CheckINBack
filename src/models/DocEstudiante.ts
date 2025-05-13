@@ -27,6 +27,27 @@ export class DocEstudiante {
   @Column({ type: 'varchar', default: 'Pendiente' })
   vac_covid_doc: string;
 
+  @Column({ type: 'bytea', nullable: true })
+  id_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  cv_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  anexo_iv_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  anexo_v_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  acta_nac_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  ced_padres_doc_file?: Buffer;
+
+  @Column({ type: 'bytea', nullable: true })
+  vac_covid_doc_file?: Buffer;
+
   @ManyToOne(() => Estudiante)
   @JoinColumn({ name: 'est_doc' })
   estudiante: Estudiante;

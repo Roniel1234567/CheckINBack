@@ -55,7 +55,13 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
         });
 
         const savedUser = await userRepository.save(newUser);
-        return res.status(201).json(savedUser);
+        // Si por alguna razón es un array, toma el primer elemento
+        const userObj = Array.isArray(savedUser) ? savedUser[0] : savedUser;
+        const usuarioConId = await userRepository.findOne({
+            where: { id_usuario: userObj.id_usuario },
+            relations: ['rol']
+        });
+        return res.status(201).json(usuarioConId);
     } catch (error) {
         console.error('Error al crear usuario:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
@@ -108,6 +114,24 @@ export const deleteUser = async (req: Request, res: Response): Promise<Response>
         return res.status(204).send();
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
+// Buscar usuario por nombre de usuario
+export const getUserByUsername = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { username } = req.params;
+        // ¡OJO! Aquí debe ser dato_usuario, no usuario
+        const user = await userRepository.findOne({
+            where: { dato_usuario: username }
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        return res.status(200).json(user);
+    } catch (error) {
+        console.error('Error al buscar usuario:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };

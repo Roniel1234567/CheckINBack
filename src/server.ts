@@ -28,6 +28,9 @@ import supervisorRoutes from './routes/SupervisorRoutes';
 import tallerRoutes from './routes/TallerRoutes';
 import tallerCentroRoutes from './routes/tallerCentroroutes';
 import tutorRoutes from './routes/TutorRoutes';
+import docEstudianteRoutes from './routes/DocEstudianteRoutes';
+import personaContactoEmpresaRoutes from './routes/PersonaContactoEmpresaRoutes';
+import personaContactoEstudianteRoutes from './routes/PersonaContactoEstudianteRoutes';
 
 // Location routes
 import ciudadRoutes from './routes/CiudadRoutes';
@@ -78,6 +81,9 @@ app.use('/api/supervisores', supervisorRoutes);
 app.use('/api/talleres', tallerRoutes);
 app.use('/api/taller-centro', tallerCentroRoutes);
 app.use('/api/tutores', tutorRoutes);
+app.use('/api/docs-estudiante', docEstudianteRoutes);
+app.use('/api/persona-contacto-empresa', personaContactoEmpresaRoutes);
+app.use('/api/persona-contacto-estudiante', personaContactoEstudianteRoutes);
 
 // Location routes
 app.use('/api/ciudades', ciudadRoutes);
