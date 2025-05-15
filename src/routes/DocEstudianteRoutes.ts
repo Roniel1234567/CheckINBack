@@ -5,7 +5,8 @@ import {
     createDocEstudiante,
     updateDocEstudiante,
     deleteDocEstudiante,
-    getArchivoEstudiante
+    getArchivoEstudiante,
+    getDocEstudianteByDocumento
 } from '../controllers/DocEstudianteController';
 import multer from 'multer';
 
@@ -15,6 +16,12 @@ const upload = multer();
 // Obtener todos los documentos de estudiantes
 router.get('/', async (req: Request, res: Response) => {
     await getAllDocEstudiantes(req, res);
+});
+
+// ¡IMPORTANTE! Ruta específica antes que la genérica
+// Obtener documentos por documento de estudiante (est_doc)
+router.get('/estudiante/:documento', async (req: Request, res: Response) => {
+    await getDocEstudianteByDocumento(req, res);
 });
 
 // Obtener documento por ID (est_doc)
@@ -50,4 +57,4 @@ router.get('/:id/archivo/:tipo', async (req: Request, res: Response) => {
     await getArchivoEstudiante(req, res);
 });
 
-export default router; 
+export default router;

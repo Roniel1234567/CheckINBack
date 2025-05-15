@@ -64,4 +64,21 @@ export const deletePersonaContactoEst = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({ message: 'Error al eliminar el contacto de estudiante' });
     }
+};
+
+export const getPersonaContactoEstByDocumento = async (req: Request, res: Response) => {
+    try {
+        const documento = req.params.documento;
+        // Busca el contacto por el documento del estudiante
+        const contacto = await personaContactoRepository.findOne({
+            where: { estudiante: { documento_id_est: documento } },
+            relations: ['estudiante']
+        });
+        if (!contacto) {
+            return res.status(404).json({ message: 'No se encontró persona de contacto para este estudiante' });
+        }
+        return res.json(contacto);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al buscar el contacto por documento de estudiante' });
+    }
 }; 

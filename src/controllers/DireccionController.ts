@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Direccion } from '../models/Direccion';
 import { Sector } from '../models/Sector';
+import { Estudiante } from '../models/Estudiante';
 
 const direccionRepository = AppDataSource.getRepository(Direccion);
 
@@ -100,5 +101,29 @@ export const deleteDireccion = async (req: Request, res: Response): Promise<Resp
     } catch (error) {
         console.error('Error al eliminar dirección:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
+export const getDireccionByEstudianteDocumento = async (req: Request, res: Response): Promise<Response | void> => {
+    const documento = req.params.documento;
+    try {
+        const estudianteRepo = AppDataSource.getRepository(Estudiante);
+        const estudiante = await estudianteRepo.findOne({
+            where: { documento_id_est: documento },
+            relations: [
+                'direccion_id',
+                'direccion_id.sector_dir',
+                'direccion_id.sector_dir.ciudad',
+                'direccion_id.sector_dir.ciudad.provincia'
+            ]
+        });
+
+        if (!estudiante || !estudiante.direccion_id) {
+            return res.status(404).json({ message: 'Dirección no encontrada para este estudiante' });
+        }
+
+        res.json(estudiante.direccion_id);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la dirección', error });
     }
 };

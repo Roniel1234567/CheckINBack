@@ -4,7 +4,8 @@ import {
     getDireccionById,
     createDireccion,
     updateDireccion,
-    deleteDireccion 
+    deleteDireccion,
+    getDireccionByEstudianteDocumento
 } from '../controllers/DireccionController';
 
 const router = Router();
@@ -32,6 +33,11 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Delete direccion
 router.delete('/:id', async (req: Request, res: Response) => {
     await deleteDireccion(req, res);
+});
+
+// Obtener dirección completa por documento de estudiante
+router.get('/estudiante/:documento', async (req: Request, res: Response) => {
+    await getDireccionByEstudianteDocumento(req, res);
 });
 
 export default router;

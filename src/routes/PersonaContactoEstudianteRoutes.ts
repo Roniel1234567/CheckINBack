@@ -4,7 +4,8 @@ import {
     getPersonaContactoEstById,
     createPersonaContactoEst,
     updatePersonaContactoEst,
-    deletePersonaContactoEst
+    deletePersonaContactoEst,
+    getPersonaContactoEstByDocumento
 } from '../controllers/PersonaContactoEstudianteController';
 
 const router = Router();
@@ -32,6 +33,11 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Eliminar contacto
 router.delete('/:id', async (req: Request, res: Response) => {
     await deletePersonaContactoEst(req, res);
+});
+
+// Obtener contacto por documento de estudiante
+router.get('/estudiante/:documento', async (req: Request, res: Response) => {
+    await getPersonaContactoEstByDocumento(req, res);
 });
 
 export default router; 

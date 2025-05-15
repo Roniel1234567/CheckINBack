@@ -27,6 +27,23 @@ export const getDocEstudianteById = async (req: Request, res: Response) => {
     }
 };
 
+export const getDocEstudianteByDocumento = async (req: Request, res: Response) => {
+    try {
+        const documento = req.params.documento;
+        // Busca los documentos por el campo est_doc (que es el documento del estudiante)
+        const docs = await docEstudianteRepository.find({
+            where: { est_doc: documento },
+            relations: ['estudiante']
+        });
+        if (!docs || docs.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron documentos para este estudiante' });
+        }
+        return res.json(docs);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al buscar documentos por documento de estudiante' });
+    }
+};
+
 // NOTA: Para subir archivos, el frontend debe enviar los archivos con los siguientes nombres de campo:
 // id_doc_file, cv_doc_file, anexo_iv_doc_file, anexo_v_doc_file, acta_nac_doc_file, ced_padres_doc_file, vac_covid_doc_file
 
