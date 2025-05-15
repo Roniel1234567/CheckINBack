@@ -4,7 +4,8 @@ import {
     getEstudianteById,
     createEstudiante,
     updateEstudiante,
-    deleteEstudiante 
+    deleteEstudiante,
+    updatePoliza
 } from '../controllers/EstudianteController';
 
 const router = Router();
@@ -22,6 +23,11 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Create new estudiante
 router.post('/', async (req: Request, res: Response) => {
     await createEstudiante(req, res);
+});
+
+// *** PON ESTA RUTA ANTES DE LA GENERAL ***
+router.put('/:id/poliza', async (req: Request, res: Response) => {
+    await updatePoliza(req, res);
 });
 
 // Update estudiante

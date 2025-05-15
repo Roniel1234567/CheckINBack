@@ -108,6 +108,7 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
 };
 
 export const updateEstudiante = async (req: Request, res: Response): Promise<Response> => {
+    console.log('ENTRANDO A updateEstudiante', req.originalUrl, req.body);
     try {
         const { id } = req.params;
         const estudianteData = req.body;
@@ -154,4 +155,28 @@ export const deleteEstudiante = async (req: Request, res: Response): Promise<Res
         console.error('Error al eliminar estudiante:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
     }
+};
+
+export const updatePoliza = async (req: Request, res: Response) => {
+  console.log('ENTRANDO A updatePoliza', req.originalUrl, req.body);
+  const documento_id_est = req.params.id;
+  const { nombre_poliza, numero_poliza } = req.body;
+
+  try {
+    const result = await estudianteRepository.update(
+      { documento_id_est },
+      { nombre_poliza, numero_poliza }
+    );
+
+    if (result.affected === 0) {
+      return res.status(404).json({ message: 'Estudiante no encontrado' });
+    }
+
+    // Devuelve el estudiante actualizado
+    const estudiante = await estudianteRepository.findOne({ where: { documento_id_est } });
+    return res.json(estudiante);
+  } catch (error) {
+    console.error('Error al actualizar póliza:', error);
+    return res.status(500).json({ message: 'Error interno al actualizar póliza' });
+  }
 };
