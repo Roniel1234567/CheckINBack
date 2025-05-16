@@ -5,7 +5,8 @@ import {
     createEstudiante,
     updateEstudiante,
     deleteEstudiante,
-    updatePoliza
+    updatePoliza,
+    updateFecha
 } from '../controllers/EstudianteController';
 
 const router = Router();
@@ -28,6 +29,11 @@ router.post('/', async (req: Request, res: Response) => {
 // *** PON ESTA RUTA ANTES DE LA GENERAL ***
 router.put('/:id/poliza', async (req: Request, res: Response) => {
     await updatePoliza(req, res);
+});
+
+// Ruta para actualizar fechas de pasantía y horas realizadas
+router.put('/:id/fechas', async (req: Request, res: Response) => {
+    await updateFecha(req, res);
 });
 
 // Update estudiante
