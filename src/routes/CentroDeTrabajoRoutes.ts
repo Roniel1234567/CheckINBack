@@ -3,7 +3,8 @@ import {
     getAllCentrosTrabajo,
     createCentroTrabajo,
     getCiudadesByProvincia,
-    getSectoresByCiudad
+    getSectoresByCiudad,
+    existeNombreCentro
 } from '../controllers/CentroDeTrabajoController';
 
 const router = Router();
@@ -26,6 +27,11 @@ router.get('/ciudades/provincia/:provinciaId', async (req: Request, res: Respons
 // Get sectores by ciudad
 router.get('/sectores/ciudad/:ciudadId', async (req: Request, res: Response) => {
     await getSectoresByCiudad(req, res);
+});
+
+// Verificar si existe un centro de trabajo con ese nombre
+router.get('/existe-nombre/:nombre', async (req: Request, res: Response) => {
+    await existeNombreCentro(req, res);
 });
 
 export default router;

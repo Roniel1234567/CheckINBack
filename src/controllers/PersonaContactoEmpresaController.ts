@@ -30,6 +30,11 @@ export const getPersonaContactoById = async (req: Request, res: Response) => {
 export const createPersonaContacto = async (req: Request, res: Response) => {
     try {
         const data = req.body;
+        // Validación de unicidad para teléfono
+        const existeTelefono = await personaContactoRepository.findOne({ where: { telefono: data.telefono } });
+        if (existeTelefono) {
+            return res.status(400).json({ message: 'Ya existe una persona de contacto con ese teléfono.' });
+        }
         // Mapear centro_trabajo a objeto si es id
         if (data.centro_trabajo) {
             data.centro_trabajo = { id_centro: data.centro_trabajo };

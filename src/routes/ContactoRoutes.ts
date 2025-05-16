@@ -4,7 +4,9 @@ import {
     getContactoById,
     createContacto,
     updateContacto,
-    deleteContacto 
+    deleteContacto,
+    existeTelefonoContacto,
+    existeEmailContacto
 } from '../controllers/ContactoControllers';
 
 const router = Router();
@@ -32,6 +34,16 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Delete contacto
 router.delete('/:id', async (req: Request, res: Response) => {
     await deleteContacto(req, res);
+});
+
+// Verificar si existe un contacto con ese teléfono
+router.get('/existe-telefono/:telefono', async (req: Request, res: Response) => {
+    await existeTelefonoContacto(req, res);
+});
+
+// Verificar si existe un contacto con ese email
+router.get('/existe-email/:email', async (req: Request, res: Response) => {
+    await existeEmailContacto(req, res);
 });
 
 export default router;

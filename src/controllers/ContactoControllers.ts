@@ -58,3 +58,21 @@ export const deleteContacto = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Error al eliminar el contacto' });
     }
 };
+
+export const existeTelefonoContacto = async (req: Request, res: Response) => {
+    const telefono = req.params.telefono;
+    if (!telefono) {
+        return res.status(400).json({ message: 'Teléfono requerido' });
+    }
+    const existe = await contactoRepository.findOne({ where: { telefono_contacto: telefono } });
+    return res.json({ exists: !!existe });
+};
+
+export const existeEmailContacto = async (req: Request, res: Response) => {
+    const email = req.params.email;
+    if (!email) {
+        return res.status(400).json({ message: 'Email requerido' });
+    }
+    const existe = await contactoRepository.findOne({ where: { email_contacto: email } });
+    return res.json({ exists: !!existe });
+};

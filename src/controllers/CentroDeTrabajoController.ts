@@ -73,6 +73,27 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             });
         }
 
+        // Validación de unicidad para nombre_centro
+        const existeNombre = await AppDataSource.getRepository(CentroDeTrabajo).findOne({ where: { nombre_centro } });
+        if (existeNombre) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un centro de trabajo con ese nombre.' });
+        }
+
+        // Validación de unicidad para telefono_contacto
+        const existeTelefono = await AppDataSource.getRepository(Contacto).findOne({ where: { telefono_contacto: contacto.telefono_contacto } });
+        if (existeTelefono) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese teléfono.' });
+        }
+
+        // Validación de unicidad para email_contacto
+        const existeCorreo = await AppDataSource.getRepository(Contacto).findOne({ where: { email_contacto: contacto.email_contacto } });
+        if (existeCorreo) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese correo electrónico.' });
+        }
+
         const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: direccion.sector_dir } });
         if (!sector) {
             await queryRunner.rollbackTransaction();
@@ -191,4 +212,13 @@ export const getSectoresByCiudad = async (req: Request, res: Response): Promise<
         console.error('Error al obtener sectores:', error);
         return res.status(500).json({ message: 'Error al obtener sectores' });
     }
+};
+
+export const existeNombreCentro = async (req: Request, res: Response): Promise<Response> => {
+    const nombre = req.params.nombre;
+    if (!nombre) {
+        return res.status(400).json({ message: 'Nombre requerido' });
+    }
+    const existe = await centroTrabajoRepository.findOne({ where: { nombre_centro: nombre } });
+    return res.json({ exists: !!existe });
 };

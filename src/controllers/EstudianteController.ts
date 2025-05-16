@@ -2,13 +2,15 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Estudiante } from '../models/Estudiante';
 import { DocEstudiante } from '../models/DocEstudiante';
+import { Poliza } from '../models/Poliza';
 
 const estudianteRepository = AppDataSource.getRepository(Estudiante);
+const polizaRepository = AppDataSource.getRepository(Poliza);
 
 export const getAllEstudiantes = async (_req: Request, res: Response): Promise<Response> => {
     try {
         const estudiantes = await estudianteRepository.find({
-            relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est']
+            relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est', 'poliza']
         });
         return res.status(200).json(estudiantes);
     } catch (error) {
@@ -22,7 +24,7 @@ export const getEstudianteById = async (req: Request, res: Response): Promise<Re
         const { id } = req.params;
         const estudiante = await estudianteRepository.findOne({
             where: { documento_id_est: id },
-            relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est']
+            relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est', 'poliza']
         });
 
         if (!estudiante) {
@@ -52,6 +54,8 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
             estudianteData.direccion_id = { id_dir: Number(estudianteData.direccion_id) };
         if (estudianteData.ciclo_escolar_est)
             estudianteData.ciclo_escolar_est = { id_ciclo: Number(estudianteData.ciclo_escolar_est) };
+        if (estudianteData.id_poliza)
+            estudianteData.poliza = { id_poliza: Number(estudianteData.id_poliza) };
 
         // Validar campos requeridos
         const camposRequeridos = ['documento_id_est', 'nombre_est', 'apellido_est', 'fecha_nac_est'];
@@ -113,6 +117,9 @@ export const updateEstudiante = async (req: Request, res: Response): Promise<Res
         const { id } = req.params;
         const estudianteData = req.body;
 
+        if (estudianteData.id_poliza)
+            estudianteData.poliza = { id_poliza: Number(estudianteData.id_poliza) };
+
         const estudiante = await estudianteRepository.findOne({
             where: { documento_id_est: id }
         });
@@ -157,30 +164,6 @@ export const deleteEstudiante = async (req: Request, res: Response): Promise<Res
     }
 };
 
-export const updatePoliza = async (req: Request, res: Response) => {
-  console.log('ENTRANDO A updatePoliza', req.originalUrl, req.body);
-  const documento_id_est = req.params.id;
-  const { nombre_poliza, numero_poliza } = req.body;
-
-  try {
-    const result = await estudianteRepository.update(
-      { documento_id_est },
-      { nombre_poliza, numero_poliza }
-    );
-
-    if (result.affected === 0) {
-      return res.status(404).json({ message: 'Estudiante no encontrado' });
-    }
-
-    // Devuelve el estudiante actualizado
-    const estudiante = await estudianteRepository.findOne({ where: { documento_id_est } });
-    return res.json(estudiante);
-  } catch (error) {
-    console.error('Error al actualizar póliza:', error);
-    return res.status(500).json({ message: 'Error interno al actualizar póliza' });
-  }
-};
-
 export const updateFecha = async (req: Request, res: Response) => {
   console.log('ENTRANDO A updateFecha', req.originalUrl, req.body);
   const documento_id_est = req.params.id;
@@ -203,4 +186,31 @@ export const updateFecha = async (req: Request, res: Response) => {
     console.error('Error al actualizar fechas:', error);
     return res.status(500).json({ message: 'Error interno al actualizar fechas' });
   }
+};
+
+export const updateEstudiantePoliza = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const { id } = req.params;
+        const { id_poliza } = req.body;
+
+        // Solo actualiza el campo poliza (id_poliza) en la tabla estudiante
+        const result = await estudianteRepository.update(
+            { documento_id_est: id },
+            { poliza: id_poliza ? { id_poliza: Number(id_poliza) } : undefined }
+        );
+
+        if (result.affected === 0) {
+            return res.status(404).json({ message: 'Estudiante no encontrado' });
+        }
+
+        // Devuelve el estudiante actualizado
+        const estudiante = await estudianteRepository.findOne({ where: { documento_id_est: id }, relations: ['poliza'] });
+        return res.status(200).json({
+            message: 'Póliza asignada correctamente',
+            estudiante
+        });
+    } catch (error) {
+        console.error('Error al actualizar póliza del estudiante:', error);
+        return res.status(500).json({ message: 'Error interno al actualizar póliza' });
+    }
 };
