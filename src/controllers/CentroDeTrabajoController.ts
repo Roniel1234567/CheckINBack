@@ -119,7 +119,8 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             nombre_centro,
             estado_centro: 'Activo',
             direccion_centro: savedDireccion,
-            contacto_centro: savedContacto
+            contacto_centro: savedContacto,
+            usuario: req.body.id_usu ? { id_usuario: req.body.id_usu } : undefined
         });
         
         const savedCentro = await queryRunner.manager.save(CentroDeTrabajo, newCentro);

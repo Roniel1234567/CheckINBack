@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Direccion } from './Direccion';
 import { Contacto } from './Contacto';
+import { Usuario } from './User';
 
 export type EstadoCentroType = 'Activo' | 'Inactivo';
 
@@ -19,6 +20,10 @@ export class CentroDeTrabajo {
   @ManyToOne(() => Contacto, { nullable: false })
   @JoinColumn({ name: 'contacto_centro' })
   contacto_centro!: Contacto;
+
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'id_usu', referencedColumnName: 'id_usuario' })
+  usuario?: Usuario;
 
   @Column({
     type: 'enum',
