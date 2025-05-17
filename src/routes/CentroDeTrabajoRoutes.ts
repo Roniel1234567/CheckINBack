@@ -4,7 +4,8 @@ import {
     createCentroTrabajo,
     getCiudadesByProvincia,
     getSectoresByCiudad,
-    existeNombreCentro
+    existeNombreCentro,
+    updateCentroTrabajo
 } from '../controllers/CentroDeTrabajoController';
 
 const router = Router();
@@ -32,6 +33,11 @@ router.get('/sectores/ciudad/:ciudadId', async (req: Request, res: Response) => 
 // Verificar si existe un centro de trabajo con ese nombre
 router.get('/existe-nombre/:nombre', async (req: Request, res: Response) => {
     await existeNombreCentro(req, res);
+});
+
+// Actualizar centro de trabajo por ID
+router.put('/:id', async (req: Request, res: Response) => {
+    await updateCentroTrabajo(req, res);
 });
 
 export default router;

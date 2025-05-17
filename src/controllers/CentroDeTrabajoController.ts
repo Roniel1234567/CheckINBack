@@ -5,15 +5,17 @@ import { Direccion } from '../models/Direccion';
 import { Contacto } from '../models/Contacto';
 import { Ciudad } from '../models/Ciudad';
 import { Sector } from '../models/Sector';
+import { PersonaContactoEmpresa } from '../models/PersonaContactoEmpresa';
 
 const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
 const direccionRepository = AppDataSource.getRepository(Direccion);
 const contactoRepository = AppDataSource.getRepository(Contacto);
+const personaContactoEmpresaRepository = AppDataSource.getRepository(PersonaContactoEmpresa);
 
 export const getAllCentrosTrabajo = async (_req: Request, res: Response): Promise<Response> => {
     try {
         const centros = await centroTrabajoRepository.find({
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: ['direccion_centro', 'contacto_centro', 'usuario']
         });
         return res.json(centros);
     } catch (error) {
@@ -147,15 +149,64 @@ export const updateCentroTrabajo = async (req: Request, res: Response): Promise<
             return res.status(400).json({ message: 'ID inválido' });
         }
 
+        // Busca el centro con sus relaciones
         const centro = await centroTrabajoRepository.findOne({
-            where: { id_centro: id }
+            where: { id_centro: id },
+            relations: ['direccion_centro', 'contacto_centro']
         });
 
         if (!centro) {
             return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
         }
 
-        centroTrabajoRepository.merge(centro, req.body);
+        // Actualiza dirección si viene en el body
+        if (req.body.direccion_centro) {
+            const dir = centro.direccion_centro;
+            if (dir) {
+                dir.calle_dir = req.body.direccion_centro.calle_dir || dir.calle_dir;
+                dir.num_res_dir = req.body.direccion_centro.num_res_dir || dir.num_res_dir;
+                dir.estado_dir = req.body.direccion_centro.estado_dir || dir.estado_dir;
+                if (req.body.direccion_centro.sector_dir) {
+                    // Busca el sector y lo asigna
+                    const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: req.body.direccion_centro.sector_dir } });
+                    if (sector) dir.sector_dir = sector;
+                }
+                await direccionRepository.save(dir);
+            }
+        }
+
+        // Actualiza contacto si viene en el body
+        if (req.body.contacto_centro) {
+            const contacto = centro.contacto_centro;
+            if (contacto) {
+                contacto.telefono_contacto = req.body.contacto_centro.telefono_contacto || contacto.telefono_contacto;
+                contacto.email_contacto = req.body.contacto_centro.email_contacto || contacto.email_contacto;
+                contacto.estado_contacto = req.body.contacto_centro.estado_contacto || contacto.estado_contacto;
+                await contactoRepository.save(contacto);
+            }
+        }
+
+        // Actualiza persona de contacto de empresa si viene en el body
+        if (req.body.persona_contacto_empresa) {
+            // Busca la persona de contacto por el id del centro
+            const personaContacto = await personaContactoEmpresaRepository.findOne({
+                where: { centro_trabajo: { id_centro: id } }
+            });
+            if (personaContacto) {
+                personaContacto.nombre_persona_contacto = req.body.persona_contacto_empresa.nombre_persona_contacto || personaContacto.nombre_persona_contacto;
+                personaContacto.apellido_persona_contacto = req.body.persona_contacto_empresa.apellido_persona_contacto || personaContacto.apellido_persona_contacto;
+                personaContacto.telefono = req.body.persona_contacto_empresa.telefono || personaContacto.telefono;
+                personaContacto.extension = req.body.persona_contacto_empresa.extension || personaContacto.extension;
+                personaContacto.departamento = req.body.persona_contacto_empresa.departamento || personaContacto.departamento;
+                await personaContactoEmpresaRepository.save(personaContacto);
+            }
+        }
+
+        // Actualiza los campos simples del centro
+        centro.nombre_centro = req.body.nombre_centro || centro.nombre_centro;
+        centro.estado_centro = req.body.estado_centro || centro.estado_centro;
+
+        // Guarda el centro (sin sobrescribir direccion_centro ni contacto_centro)
         const updatedCentro = await centroTrabajoRepository.save(centro);
         return res.status(200).json(updatedCentro);
     } catch (error) {

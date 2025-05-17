@@ -127,3 +127,27 @@ export const getDireccionByEstudianteDocumento = async (req: Request, res: Respo
         res.status(500).json({ message: 'Error al obtener la dirección', error });
     }
 };
+
+export const getDireccionByCentro = async (req: Request, res: Response): Promise<Response | void> => {
+    const idCentro = Number(req.params.idCentro);
+    try {
+        const centroRepo = AppDataSource.getRepository('CentroDeTrabajo');
+        const centro = await centroRepo.findOne({
+            where: { id_centro: idCentro },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia'
+            ]
+        });
+
+        if (!centro || !centro.direccion_centro) {
+            return res.status(404).json({ message: 'Dirección no encontrada para este centro de trabajo' });
+        }
+
+        res.json(centro.direccion_centro);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener la dirección', error });
+    }
+};
