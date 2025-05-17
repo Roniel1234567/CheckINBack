@@ -28,13 +28,9 @@ export const getPersonaContactoById = async (req: Request, res: Response) => {
 };
 
 export const createPersonaContacto = async (req: Request, res: Response) => {
+    console.log('BODY RECIBIDO:', req.body);
     try {
         const data = req.body;
-        // Validación de unicidad para teléfono
-        const existeTelefono = await personaContactoRepository.findOne({ where: { telefono: data.telefono } });
-        if (existeTelefono) {
-            return res.status(400).json({ message: 'Ya existe una persona de contacto con ese teléfono.' });
-        }
         // Mapear centro_trabajo a objeto si es id
         if (data.centro_trabajo) {
             data.centro_trabajo = { id_centro: data.centro_trabajo };
@@ -43,7 +39,8 @@ export const createPersonaContacto = async (req: Request, res: Response) => {
         await personaContactoRepository.save(nuevoContacto);
         return res.status(201).json(nuevoContacto);
     } catch (error) {
-        return res.status(500).json({ message: 'Error al crear el contacto de persona' });
+        console.error('ERROR AL CREAR PERSONA CONTACTO:', error);
+        return res.status(500).json({ message: 'Error al crear el contacto de persona', error: error instanceof Error ? error.message : error });
     }
 };
 
