@@ -41,6 +41,20 @@ export const getTallerById = async (req: Request, res: Response): Promise<Respon
 
 export const createTaller = async (req: Request, res: Response): Promise<Response> => {
     try {
+        // Generar ID numérico si no viene en el request
+        if (!req.body.id_taller) {
+            // Buscar el ID máximo y añadir 1
+            const result = await AppDataSource.query('SELECT MAX(id_taller::integer) as max_id FROM taller');
+            const maxId = result[0]?.max_id || 0;
+            const newId = (parseInt(maxId) + 1).toString();
+            req.body.id_taller = newId;
+        }
+        
+        // Establecer valor predeterminado para horaspas_taller si no viene en el request
+        if (req.body.horaspas_taller === undefined) {
+            req.body.horaspas_taller = 0;
+        }
+        
         const newTaller = tallerRepository.create(req.body);
         const savedTaller = await tallerRepository.save(newTaller);
         return res.status(201).json(savedTaller);
