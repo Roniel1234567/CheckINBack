@@ -14,7 +14,11 @@ export const getAllEstudiantes = async (_req: Request, res: Response): Promise<R
         const estudiantes = await estudianteRepository.find({
             relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est', 'poliza']
         });
-        return res.status(200).json(estudiantes);
+        const estudiantesConNacionalidad = estudiantes.map(est => ({
+            ...est,
+            nacionalidad: est.nacionalidad || null
+        }));
+        return res.status(200).json(estudiantesConNacionalidad);
     } catch (error) {
         console.error('Error al obtener estudiantes:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
@@ -33,7 +37,10 @@ export const getEstudianteById = async (req: Request, res: Response): Promise<Re
             return res.status(404).json({ message: 'Estudiante no encontrado' });
         }
 
-        return res.status(200).json(estudiante);
+        return res.status(200).json({
+            ...estudiante,
+            nacionalidad: estudiante.nacionalidad || null
+        });
     } catch (error) {
         console.error('Error al obtener estudiante:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });

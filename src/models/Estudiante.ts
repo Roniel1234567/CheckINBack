@@ -66,6 +66,9 @@ export class Estudiante {
   @JoinColumn({ name: 'id_poliza' })
   poliza?: Poliza;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  nacionalidad?: string;
+
   constructor() {
     this.tipo_documento_est = 'Cédula';
     this.documento_id_est = '';
