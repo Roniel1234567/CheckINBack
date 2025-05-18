@@ -3,9 +3,11 @@ import { AppDataSource } from '../data-source';
 import { Estudiante } from '../models/Estudiante';
 import { DocEstudiante } from '../models/DocEstudiante';
 import { Poliza } from '../models/Poliza';
+import { CentroDeTrabajo } from '../models/CentroDeTrabajo';
 
 const estudianteRepository = AppDataSource.getRepository(Estudiante);
 const polizaRepository = AppDataSource.getRepository(Poliza);
+const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
 
 export const getAllEstudiantes = async (_req: Request, res: Response): Promise<Response> => {
     try {

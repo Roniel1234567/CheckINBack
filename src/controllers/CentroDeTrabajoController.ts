@@ -15,7 +15,15 @@ const personaContactoEmpresaRepository = AppDataSource.getRepository(PersonaCont
 export const getAllCentrosTrabajo = async (_req: Request, res: Response): Promise<Response> => {
     try {
         const centros = await centroTrabajoRepository.find({
-            relations: ['direccion_centro', 'contacto_centro', 'usuario']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
         return res.json(centros);
     } catch (error) {
@@ -33,7 +41,15 @@ export const getCentroTrabajoById = async (req: Request, res: Response): Promise
 
         const centro = await centroTrabajoRepository.findOne({
             where: { id_centro: id },
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
 
         if (!centro) {
@@ -149,10 +165,18 @@ export const updateCentroTrabajo = async (req: Request, res: Response): Promise<
             return res.status(400).json({ message: 'ID inválido' });
         }
 
-        // Busca el centro con sus relaciones
+        // Busca el centro con sus relaciones profundas
         const centro = await centroTrabajoRepository.findOne({
             where: { id_centro: id },
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
 
         if (!centro) {

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
 import { Direccion } from './Direccion';
 import { Contacto } from './Contacto';
 import { Usuario } from './User';
+import { PersonaContactoEmpresa } from './PersonaContactoEmpresa';
 
 export type EstadoCentroType = 'Activo' | 'Inactivo';
 
@@ -24,6 +25,9 @@ export class CentroDeTrabajo {
   @ManyToOne(() => Usuario, { nullable: true })
   @JoinColumn({ name: 'id_usu', referencedColumnName: 'id_usuario' })
   usuario?: Usuario;
+
+  @OneToMany(() => PersonaContactoEmpresa, (pce) => pce.centro_trabajo)
+  persona_contacto_empresa!: PersonaContactoEmpresa[];
 
   @Column({
     type: 'enum',
