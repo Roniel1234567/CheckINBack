@@ -5,6 +5,7 @@ import { Usuario } from './User';
 import { PersonaContactoEmpresa } from './PersonaContactoEmpresa';
 
 export type EstadoCentroType = 'Activo' | 'Inactivo';
+export type TipoValidacion = 'Aceptada' | 'Rechazada' | 'Pendiente';
 
 @Entity('centro_trabajo')
 export class CentroDeTrabajo {
@@ -35,6 +36,14 @@ export class CentroDeTrabajo {
     default: 'Activo'
   })
   estado_centro!: EstadoCentroType;
+
+  @Column({
+    type: 'enum',
+    enum: ['Aceptada', 'Rechazada', 'Pendiente'],
+    default: 'Pendiente',
+    nullable: false
+  })
+  validacion!: TipoValidacion;
 
   @CreateDateColumn({ name: 'creacion_centro' })
   creacion_centro!: Date;

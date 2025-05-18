@@ -5,7 +5,9 @@ import {
     getCiudadesByProvincia,
     getSectoresByCiudad,
     existeNombreCentro,
-    updateCentroTrabajo
+    updateCentroTrabajo,
+    getCentrosPendientes,
+    validarCentro
 } from '../controllers/CentroDeTrabajoController';
 
 const router = Router();
@@ -38,6 +40,16 @@ router.get('/existe-nombre/:nombre', async (req: Request, res: Response) => {
 // Actualizar centro de trabajo por ID
 router.put('/:id', async (req: Request, res: Response) => {
     await updateCentroTrabajo(req, res);
+});
+
+// Obtener centros pendientes de validación
+router.get('/pendientes', async (req: Request, res: Response) => {
+    await getCentrosPendientes(req, res);
+});
+
+// Validar centro de trabajo (ahora acepta PUT)
+router.put('/:id/validar', async (req: Request, res: Response) => {
+    await validarCentro(req, res);
 });
 
 export default router;

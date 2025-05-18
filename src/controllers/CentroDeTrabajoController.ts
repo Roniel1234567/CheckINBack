@@ -138,7 +138,8 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             estado_centro: 'Activo',
             direccion_centro: savedDireccion,
             contacto_centro: savedContacto,
-            usuario: req.body.id_usu ? { id_usuario: req.body.id_usu } : undefined
+            usuario: req.body.id_usu ? { id_usuario: req.body.id_usu } : undefined,
+            validacion: req.body.validacion || 'Pendiente'
         });
         
         const savedCentro = await queryRunner.manager.save(CentroDeTrabajo, newCentro);
@@ -230,6 +231,11 @@ export const updateCentroTrabajo = async (req: Request, res: Response): Promise<
         centro.nombre_centro = req.body.nombre_centro || centro.nombre_centro;
         centro.estado_centro = req.body.estado_centro || centro.estado_centro;
 
+        // Actualiza validacion si viene en el body
+        if (req.body.validacion) {
+            centro.validacion = req.body.validacion;
+        }
+
         // Guarda el centro (sin sobrescribir direccion_centro ni contacto_centro)
         const updatedCentro = await centroTrabajoRepository.save(centro);
         return res.status(200).json(updatedCentro);
@@ -297,4 +303,45 @@ export const existeNombreCentro = async (req: Request, res: Response): Promise<R
     }
     const existe = await centroTrabajoRepository.findOne({ where: { nombre_centro: nombre } });
     return res.json({ exists: !!existe });
+};
+
+export const getCentrosPendientes = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const centros = await centroTrabajoRepository.find({
+            where: { validacion: 'Pendiente' },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
+        });
+        return res.json(centros);
+    } catch (error) {
+        console.error('Error al obtener centros pendientes:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
+export const validarCentro = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const id = parseInt(req.params.id);
+        const { validacion } = req.body;
+        if (isNaN(id) || !validacion) {
+            return res.status(400).json({ message: 'ID o validación inválidos' });
+        }
+        const centro = await centroTrabajoRepository.findOne({ where: { id_centro: id } });
+        if (!centro) {
+            return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
+        }
+        centro.validacion = validacion;
+        await centroTrabajoRepository.save(centro);
+        return res.status(200).json({ message: 'Centro validado correctamente', centro });
+    } catch (error) {
+        console.error('Error al validar centro de trabajo:', error);
+        return res.status(500).json({ message: 'Error interno al validar centro de trabajo' });
+    }
 };
