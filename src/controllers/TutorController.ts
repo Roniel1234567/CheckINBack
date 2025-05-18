@@ -7,7 +7,7 @@ const tutorRepository = AppDataSource.getRepository(Tutor);
 export const getAllTutores = async (_req: Request, res: Response): Promise<Response> => {
     try {
         const tutores = await tutorRepository.find({
-            relations: ['usuario_tutor', 'contacto_tutor']
+            relations: ['usuario_tutor', 'contacto_tutor', 'taller_tutor']
         });
         return res.status(200).json(tutores);
     } catch (error) {
@@ -25,7 +25,7 @@ export const getTutorById = async (req: Request, res: Response): Promise<Respons
 
         const tutor = await tutorRepository.findOne({
             where: { id_tutor: id },
-            relations: ['usuario_tutor', 'contacto_tutor']
+            relations: ['usuario_tutor', 'contacto_tutor', 'taller_tutor']
         });
 
         if (!tutor) {
