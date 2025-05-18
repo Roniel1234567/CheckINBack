@@ -36,7 +36,12 @@ const PasantiaRoutes_1 = __importDefault(require("./routes/PasantiaRoutes"));
 const PlazasdeCentroRoutes_1 = __importDefault(require("./routes/PlazasdeCentroRoutes"));
 const SupervisorRoutes_1 = __importDefault(require("./routes/SupervisorRoutes"));
 const TallerRoutes_1 = __importDefault(require("./routes/TallerRoutes"));
+const tallerCentroroutes_1 = __importDefault(require("./routes/tallerCentroroutes"));
 const TutorRoutes_1 = __importDefault(require("./routes/TutorRoutes"));
+const DocEstudianteRoutes_1 = __importDefault(require("./routes/DocEstudianteRoutes"));
+const PersonaContactoEmpresaRoutes_1 = __importDefault(require("./routes/PersonaContactoEmpresaRoutes"));
+const PersonaContactoEstudianteRoutes_1 = __importDefault(require("./routes/PersonaContactoEstudianteRoutes"));
+const PolizaRoutes_1 = __importDefault(require("./routes/PolizaRoutes"));
 // Location routes
 const CiudadRoutes_1 = __importDefault(require("./routes/CiudadRoutes"));
 const ProvinciaRoutes_1 = __importDefault(require("./routes/ProvinciaRoutes"));
@@ -47,8 +52,10 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000', // Update with your frontend URL
-    credentials: true
+    origin: process.env.NODE_ENV === 'development' ? true : 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express_1.default.json());
 // Test route
@@ -75,11 +82,52 @@ app.use('/api/pasantias', PasantiaRoutes_1.default);
 app.use('/api/plazas', PlazasdeCentroRoutes_1.default);
 app.use('/api/supervisores', SupervisorRoutes_1.default);
 app.use('/api/talleres', TallerRoutes_1.default);
+app.use('/api/taller-centro', tallerCentroroutes_1.default);
 app.use('/api/tutores', TutorRoutes_1.default);
+app.use('/api/docs-estudiante', DocEstudianteRoutes_1.default);
+app.use('/api/persona-contacto-empresa', PersonaContactoEmpresaRoutes_1.default);
+app.use('/api/persona-contacto-estudiante', PersonaContactoEstudianteRoutes_1.default);
+app.use('/api/polizas', PolizaRoutes_1.default);
 // Location routes
 app.use('/api/ciudades', CiudadRoutes_1.default);
 app.use('/api/provincias', ProvinciaRoutes_1.default);
 app.use('/api/sectores', SectorRoutes_1.default);
+// Add specific location endpoints for dropdowns
+app.get('/api/ciudades/provincia/:provinciaId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const provinciaId = parseInt(req.params.provinciaId);
+        const ciudades = yield data_source_1.AppDataSource
+            .getRepository('Ciudad')
+            .createQueryBuilder('ciudad')
+            .leftJoinAndSelect('ciudad.provincia', 'provincia')
+            .where('ciudad.provincia_ciu = :provinciaId', { provinciaId })
+            .getMany();
+        console.log('Ciudades encontradas:', ciudades); // Debug log
+        res.json(ciudades);
+    }
+    catch (error) {
+        console.error('Error detallado:', error);
+        res.status(500).json({
+            message: 'Error interno del servidor',
+            error: process.env.NODE_ENV === 'development' ? (error && error.message ? error.message : String(error)) : undefined
+        });
+    }
+}));
+app.get('/api/sectores/ciudad/:ciudadId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const ciudadId = parseInt(req.params.ciudadId);
+        const sectores = yield data_source_1.AppDataSource
+            .getRepository('Sector')
+            .find({
+            where: { ciudad_sec: ciudadId }
+        });
+        res.json(sectores);
+    }
+    catch (error) {
+        console.error('Error fetching sectores:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+}));
 // Role routes
 app.use('/api/roles', RolRoutes_1.default);
 // Protected supervisor/tutor route
@@ -96,4 +144,21 @@ app.get('/api/estudiantes', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 }));
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err);
+    let errorMessage = undefined;
+    if (process.env.NODE_ENV === 'development') {
+        if (err && typeof err === 'object' && 'message' in err) {
+            errorMessage = err.message;
+        }
+        else {
+            errorMessage = String(err);
+        }
+    }
+    res.status(500).json({
+        message: 'Error interno del servidor',
+        error: errorMessage
+    });
+});
 exports.default = app;

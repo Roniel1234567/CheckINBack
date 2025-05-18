@@ -9,36 +9,39 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Contacto = void 0;
+exports.Poliza = void 0;
 const typeorm_1 = require("typeorm");
-let Contacto = class Contacto {
-    constructor() {
-        this.estado_contacto = 'Activo';
-        this.creacion_contacto = new Date();
-    }
+let Poliza = class Poliza {
 };
-exports.Contacto = Contacto;
+exports.Poliza = Poliza;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)({ name: 'id_contacto' }),
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Contacto.prototype, "id_contacto", void 0);
+], Poliza.prototype, "id_poliza", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 50, name: 'telefono_contacto' }),
+    (0, typeorm_1.Column)({ length: 150 }),
     __metadata("design:type", String)
-], Contacto.prototype, "telefono_contacto", void 0);
+], Poliza.prototype, "compania", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 100, name: 'email_contacto' }),
+    (0, typeorm_1.Column)({ length: 100 }),
     __metadata("design:type", String)
-], Contacto.prototype, "email_contacto", void 0);
+], Poliza.prototype, "tipo_poliza", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Activo' }),
+    (0, typeorm_1.Column)({ length: 150 }),
     __metadata("design:type", String)
-], Contacto.prototype, "estado_contacto", void 0);
+], Poliza.prototype, "nombre_poliza", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)({ type: 'timestamp' }),
-    __metadata("design:type", Date)
-], Contacto.prototype, "creacion_contacto", void 0);
-exports.Contacto = Contacto = __decorate([
-    (0, typeorm_1.Entity)('contacto'),
-    __metadata("design:paramtypes", [])
-], Contacto);
+    (0, typeorm_1.Column)({ length: 50 }),
+    __metadata("design:type", String)
+], Poliza.prototype, "numero_poliza", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date' }),
+    __metadata("design:type", String)
+], Poliza.prototype, "fecha_inicio", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true }),
+    __metadata("design:type", Object)
+], Poliza.prototype, "fecha_fin", void 0);
+exports.Poliza = Poliza = __decorate([
+    (0, typeorm_1.Entity)()
+], Poliza);

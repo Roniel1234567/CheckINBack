@@ -10,34 +10,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const ContactoControllers_1 = require("../controllers/ContactoControllers");
+const PolizaController_1 = require("../controllers/PolizaController");
 const router = (0, express_1.Router)();
-// Get all contactos
+// Obtener todas las pólizas
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.getAllContactos)(req, res);
+    yield (0, PolizaController_1.getAllPolizas)(req, res);
 }));
-// Get contacto by ID
+// Obtener póliza por ID
 router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.getContactoById)(req, res);
+    yield (0, PolizaController_1.getPolizaById)(req, res);
 }));
-// Create new contacto
+// Crear nueva póliza
 router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.createContacto)(req, res);
+    yield (0, PolizaController_1.createPoliza)(req, res);
 }));
-// Update contacto
+// Actualizar póliza
 router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.updateContacto)(req, res);
+    yield (0, PolizaController_1.updatePoliza)(req, res);
 }));
-// Delete contacto
+// Eliminar póliza
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.deleteContacto)(req, res);
-}));
-// Verificar si existe un contacto con ese teléfono
-router.get('/existe-telefono/:telefono', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.existeTelefonoContacto)(req, res);
-}));
-// Verificar si existe un contacto con ese email
-router.get('/existe-email/:email', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.existeEmailContacto)(req, res);
+    yield (0, PolizaController_1.deletePoliza)(req, res);
 }));
 exports.default = router;

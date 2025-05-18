@@ -13,57 +13,45 @@ exports.DocEstudiante = void 0;
 const typeorm_1 = require("typeorm");
 const Estudiante_1 = require("./Estudiante");
 let DocEstudiante = class DocEstudiante {
-    constructor() {
-        this.est_doc = '';
-        this.id_doc = 'Pendiente';
-        this.cv_doc = 'Pendiente';
-        this.anexo_iv_doc = 'Pendiente';
-        this.anexo_v_doc = 'Pendiente';
-        this.acta_nac_doc = 'Pendiente';
-        this.ced_padres_doc = 'Pendiente';
-        this.vac_covid_doc = 'Pendiente';
-        this.estudiante = new Estudiante_1.Estudiante();
-    }
 };
 exports.DocEstudiante = DocEstudiante;
 __decorate([
-    (0, typeorm_1.PrimaryColumn)({ type: 'varchar', length: 20 }),
+    (0, typeorm_1.PrimaryColumn)({ name: 'est_doc', type: 'varchar', length: 20 }),
     __metadata("design:type", String)
 ], DocEstudiante.prototype, "est_doc", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "id_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "cv_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "anexo_iv_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "anexo_v_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "acta_nac_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "ced_padres_doc", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', default: 'Pendiente' }),
-    __metadata("design:type", String)
-], DocEstudiante.prototype, "vac_covid_doc", void 0);
-__decorate([
-    (0, typeorm_1.ManyToOne)(() => Estudiante_1.Estudiante),
-    (0, typeorm_1.JoinColumn)({ name: 'est_doc' }),
+    (0, typeorm_1.ManyToOne)(() => Estudiante_1.Estudiante, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'est_doc', referencedColumnName: 'documento_id_est' }),
     __metadata("design:type", Estudiante_1.Estudiante)
 ], DocEstudiante.prototype, "estudiante", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'ced_est', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "ced_est", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'cv_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "cv_doc", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'anexo_iv_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "anexo_iv_doc", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'anexo_v_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "anexo_v_doc", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'acta_nac_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "acta_nac_doc", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'ced_padres_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "ced_padres_doc", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'bytea', name: 'vac_covid_doc', nullable: true }),
+    __metadata("design:type", Buffer)
+], DocEstudiante.prototype, "vac_covid_doc", void 0);
 exports.DocEstudiante = DocEstudiante = __decorate([
-    (0, typeorm_1.Entity)('doc_estudiante'),
-    __metadata("design:paramtypes", [])
+    (0, typeorm_1.Entity)('doc_estudiante')
 ], DocEstudiante);

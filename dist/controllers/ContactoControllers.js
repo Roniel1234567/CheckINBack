@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteContacto = exports.updateContacto = exports.createContacto = exports.getContactoById = exports.getAllContactos = void 0;
+exports.existeEmailContacto = exports.existeTelefonoContacto = exports.deleteContacto = exports.updateContacto = exports.createContacto = exports.getContactoById = exports.getAllContactos = void 0;
 const data_source_1 = require("../data-source");
 const Contacto_1 = require("../models/Contacto");
 const contactoRepository = data_source_1.AppDataSource.getRepository(Contacto_1.Contacto);
@@ -75,3 +75,21 @@ const deleteContacto = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.deleteContacto = deleteContacto;
+const existeTelefonoContacto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const telefono = req.params.telefono;
+    if (!telefono) {
+        return res.status(400).json({ message: 'Teléfono requerido' });
+    }
+    const existe = yield contactoRepository.findOne({ where: { telefono_contacto: telefono } });
+    return res.json({ exists: !!existe });
+});
+exports.existeTelefonoContacto = existeTelefonoContacto;
+const existeEmailContacto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const email = req.params.email;
+    if (!email) {
+        return res.status(400).json({ message: 'Email requerido' });
+    }
+    const existe = yield contactoRepository.findOne({ where: { email_contacto: email } });
+    return res.json({ exists: !!existe });
+});
+exports.existeEmailContacto = existeEmailContacto;

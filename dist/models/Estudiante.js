@@ -17,6 +17,7 @@ const Taller_1 = require("./Taller");
 const Direccion_1 = require("./Direccion");
 const CicloEscolar_1 = require("./CicloEscolar");
 const familia_profecional_1 = require("./familia_profecional"); // Ajusta la ruta según corresponda
+const Poliza_1 = require("./Poliza");
 let Estudiante = class Estudiante {
     constructor() {
         this.tipo_documento_est = 'Cédula';
@@ -31,8 +32,11 @@ let Estudiante = class Estudiante {
         this.direccion_id = new Direccion_1.Direccion();
         this.ciclo_escolar_est = new CicloEscolar_1.CicloEscolar();
         this.creacion_est = new Date();
-        // Aquí se crea una instancia de Taller, pasando una instancia de FamiliaProfesional con valores opcionales (por defecto)
-        this.taller_est = new Taller_1.Taller('', '', new familia_profecional_1.FamiliaProfesional(), '', 'Activo');
+        this.taller_est = new Taller_1.Taller('', '', new familia_profecional_1.FamiliaProfesional());
+        // Inicialización de campos de pasantía y póliza
+        this.horaspasrealizadas_est = 0;
+        this.fecha_inicio_pasantia = undefined;
+        this.fecha_fin_pasantia = undefined;
     }
 };
 exports.Estudiante = Estudiante;
@@ -90,9 +94,30 @@ __decorate([
     __metadata("design:type", CicloEscolar_1.CicloEscolar)
 ], Estudiante.prototype, "ciclo_escolar_est", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'decimal', precision: 5, scale: 2, nullable: true }),
+    __metadata("design:type", Number)
+], Estudiante.prototype, "horaspasrealizadas_est", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)({ type: 'timestamp' }),
     __metadata("design:type", Date)
 ], Estudiante.prototype, "creacion_est", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true }),
+    __metadata("design:type", Date)
+], Estudiante.prototype, "fecha_inicio_pasantia", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'date', nullable: true }),
+    __metadata("design:type", Date)
+], Estudiante.prototype, "fecha_fin_pasantia", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => Poliza_1.Poliza, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'id_poliza' }),
+    __metadata("design:type", Poliza_1.Poliza)
+], Estudiante.prototype, "poliza", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, nullable: true }),
+    __metadata("design:type", String)
+], Estudiante.prototype, "nacionalidad", void 0);
 exports.Estudiante = Estudiante = __decorate([
     (0, typeorm_1.Entity)('estudiante'),
     __metadata("design:paramtypes", [])

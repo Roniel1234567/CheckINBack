@@ -10,34 +10,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const ContactoControllers_1 = require("../controllers/ContactoControllers");
+const PersonaContactoEstudianteController_1 = require("../controllers/PersonaContactoEstudianteController");
 const router = (0, express_1.Router)();
-// Get all contactos
+// Obtener todos los contactos de estudiante
 router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.getAllContactos)(req, res);
+    yield (0, PersonaContactoEstudianteController_1.getAllPersonaContactosEst)(req, res);
 }));
-// Get contacto by ID
+// Obtener contacto por ID
 router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.getContactoById)(req, res);
+    yield (0, PersonaContactoEstudianteController_1.getPersonaContactoEstById)(req, res);
 }));
-// Create new contacto
+// Crear nuevo contacto
 router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.createContacto)(req, res);
+    yield (0, PersonaContactoEstudianteController_1.createPersonaContactoEst)(req, res);
 }));
-// Update contacto
+// Actualizar contacto
 router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.updateContacto)(req, res);
+    yield (0, PersonaContactoEstudianteController_1.updatePersonaContactoEst)(req, res);
 }));
-// Delete contacto
+// Eliminar contacto
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.deleteContacto)(req, res);
+    yield (0, PersonaContactoEstudianteController_1.deletePersonaContactoEst)(req, res);
 }));
-// Verificar si existe un contacto con ese teléfono
-router.get('/existe-telefono/:telefono', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.existeTelefonoContacto)(req, res);
-}));
-// Verificar si existe un contacto con ese email
-router.get('/existe-email/:email', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, ContactoControllers_1.existeEmailContacto)(req, res);
+// Obtener contacto por documento de estudiante
+router.get('/estudiante/:documento', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, PersonaContactoEstudianteController_1.getPersonaContactoEstByDocumento)(req, res);
 }));
 exports.default = router;

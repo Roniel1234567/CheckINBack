@@ -1,7 +1,7 @@
 // src/controllers/TallerCentroController.ts
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
-import { TallerCentro } from '../models/Tallercentro';
+import { TallerCentro } from '../models/TallerCentro';
 import { Taller } from '../models/Taller';
 import { CentroDeTrabajo } from '../models/CentroDeTrabajo';
 import { FindOptionsWhere } from 'typeorm';

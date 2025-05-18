@@ -13,6 +13,8 @@ exports.CentroDeTrabajo = void 0;
 const typeorm_1 = require("typeorm");
 const Direccion_1 = require("./Direccion");
 const Contacto_1 = require("./Contacto");
+const User_1 = require("./User");
+const PersonaContactoEmpresa_1 = require("./PersonaContactoEmpresa");
 let CentroDeTrabajo = class CentroDeTrabajo {
     constructor() {
         this.estado_centro = 'Activo';
@@ -39,6 +41,15 @@ __decorate([
     __metadata("design:type", Contacto_1.Contacto)
 ], CentroDeTrabajo.prototype, "contacto_centro", void 0);
 __decorate([
+    (0, typeorm_1.ManyToOne)(() => User_1.Usuario, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'id_usu', referencedColumnName: 'id_usuario' }),
+    __metadata("design:type", User_1.Usuario)
+], CentroDeTrabajo.prototype, "usuario", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => PersonaContactoEmpresa_1.PersonaContactoEmpresa, (pce) => pce.centro_trabajo),
+    __metadata("design:type", Array)
+], CentroDeTrabajo.prototype, "persona_contacto_empresa", void 0);
+__decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: ['Activo', 'Inactivo'],
@@ -46,6 +57,15 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CentroDeTrabajo.prototype, "estado_centro", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: ['Aceptada', 'Rechazada', 'Pendiente'],
+        default: 'Pendiente',
+        nullable: false
+    }),
+    __metadata("design:type", String)
+], CentroDeTrabajo.prototype, "validacion", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'creacion_centro' }),
     __metadata("design:type", Date)

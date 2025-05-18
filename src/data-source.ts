@@ -16,6 +16,7 @@ import { DocEstudiante } from "./models/DocEstudiante";
 import { PersonaContactoEmpresa } from "./models/PersonaContactoEmpresa";
 import { PersonaContactoEstudiante } from "./models/PersonaContactoEstudiante";
 import { Poliza } from "./models/Poliza";
+import { PlazasCentro } from "./models/Plazas";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -45,7 +46,8 @@ export const AppDataSource = new DataSource({
         DocEstudiante,
         PersonaContactoEmpresa,
         PersonaContactoEstudiante,
-        Poliza
+        Poliza,
+        PlazasCentro
     ],
     migrations: [],
     subscribers: []

@@ -16,7 +16,6 @@ const Taller_1 = require("./Taller");
 let PlazasCentro = class PlazasCentro {
     constructor() {
         this.plazas_centro = 0;
-        this.plazas_ocupadas = 0;
         this.creacion_plaza = new Date();
     }
 };
@@ -40,13 +39,35 @@ __decorate([
     __metadata("design:type", Number)
 ], PlazasCentro.prototype, "plazas_centro", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'integer', default: 0, nullable: false }),
-    __metadata("design:type", Number)
-], PlazasCentro.prototype, "plazas_ocupadas", void 0);
-__decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'creacion_plaza' }),
     __metadata("design:type", Date)
 ], PlazasCentro.prototype, "creacion_plaza", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: ['Activa', 'Inactiva'],
+        default: 'Activa',
+        nullable: false
+    }),
+    __metadata("design:type", String)
+], PlazasCentro.prototype, "estado", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'integer', nullable: true }),
+    __metadata("design:type", Number)
+], PlazasCentro.prototype, "edad_minima", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: ['Masculino', 'Femenino', 'Ambos'],
+        default: 'Ambos',
+        nullable: false
+    }),
+    __metadata("design:type", String)
+], PlazasCentro.prototype, "genero", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], PlazasCentro.prototype, "observacion", void 0);
 exports.PlazasCentro = PlazasCentro = __decorate([
     (0, typeorm_1.Entity)('plazas_centro'),
     __metadata("design:paramtypes", [])

@@ -2,6 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 import { CentroDeTrabajo } from './CentroDeTrabajo';
 import { Taller } from './Taller';
 
+export type EstadoPlaza = 'Activa' | 'Inactiva';
+export type GeneroPermitido = 'Masculino' | 'Femenino' | 'Ambos';
+
 @Entity('plazas_centro')
 export class PlazasCentro {
     @PrimaryGeneratedColumn()
@@ -18,15 +21,33 @@ export class PlazasCentro {
     @Column({ type: 'integer', nullable: false })
     plazas_centro!: number;
 
-    @Column({ type: 'integer', default: 0, nullable: false })
-    plazas_ocupadas!: number;
-
     @CreateDateColumn({ name: 'creacion_plaza' })
     creacion_plaza!: Date;
 
+    @Column({
+        type: 'enum',
+        enum: ['Activa', 'Inactiva'],
+        default: 'Activa',
+        nullable: false
+    })
+    estado!: EstadoPlaza;
+
+    @Column({ type: 'integer', nullable: true })
+    edad_minima?: number;
+
+    @Column({
+        type: 'enum',
+        enum: ['Masculino', 'Femenino', 'Ambos'],
+        default: 'Ambos',
+        nullable: false
+    })
+    genero!: GeneroPermitido;
+
+    @Column({ type: 'text', nullable: true })
+    observacion?: string;
+
     constructor() {
         this.plazas_centro = 0;
-        this.plazas_ocupadas = 0;
         this.creacion_plaza = new Date();
     }
 }

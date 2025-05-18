@@ -32,4 +32,12 @@ router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, DireccionController_1.deleteDireccion)(req, res);
 }));
+// Obtener dirección completa por documento de estudiante
+router.get('/estudiante/:documento', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, DireccionController_1.getDireccionByEstudianteDocumento)(req, res);
+}));
+// Obtener dirección completa por id de centro de trabajo
+router.get('/centro/:idCentro', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, DireccionController_1.getDireccionByCentro)(req, res);
+}));
 exports.default = router;
