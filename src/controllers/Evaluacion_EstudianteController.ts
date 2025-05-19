@@ -6,10 +6,28 @@ const evaluacionEstudianteRepository = AppDataSource.getRepository(EvaluacionEst
 
 export const getAllEvaluacionesEstudiante = async (req: Request, res: Response) => {
     try {
-        const evaluaciones = await evaluacionEstudianteRepository.find();
+        const evaluaciones = await evaluacionEstudianteRepository.find({
+            relations: ['pasantia_eval', 'pasantia_eval.estudiante_pas', 'pasantia_eval.centro_pas']
+        });
         return res.json(evaluaciones);
     } catch (error) {
-        return res.status(500).json({ message: 'Error al obtener las evaluaciones de estudiantes' });
+        return res.status(500).json({ message: 'Error al obtener evaluaciones' });
+    }
+};
+
+export const getEvaluacionesByEstudiante = async (req: Request, res: Response) => {
+    try {
+        const { documentoId } = req.params;
+        const evaluaciones = await evaluacionEstudianteRepository
+            .createQueryBuilder('evaluacion')
+            .innerJoinAndSelect('evaluacion.pasantia_eval', 'pasantia')
+            .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .where('estudiante.documento_id_est = :documentoId', { documentoId })
+            .getMany();
+            
+        return res.json(evaluaciones);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al obtener evaluaciones por estudiante' });
     }
 };
 

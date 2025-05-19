@@ -4,7 +4,8 @@ import {
     getEvaluacionCentroById,
     createEvaluacionCentro,
     updateEvaluacionCentro,
-    deleteEvaluacionCentro 
+    deleteEvaluacionCentro,
+    getEvaluacionesByCentro
 } from '../controllers/Evaluacion_centro_Controller';
 
 const router = Router();
@@ -12,6 +13,11 @@ const router = Router();
 // Get all evaluaciones centro
 router.get('/', async (req: Request, res: Response) => {
     await getAllEvaluacionesCentro(req, res);
+});
+
+// Get evaluaciones por centro
+router.get('/porCentro/:idCentro', async (req: Request, res: Response) => {
+    await getEvaluacionesByCentro(req, res);
 });
 
 // Get evaluacion centro by ID

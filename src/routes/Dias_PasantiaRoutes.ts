@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { 
     getAllDiasPasantia,
     getDiasPasantiaById,
+    getDiasPasantiaPorPasantia,
     createDiasPasantia,
     updateDiasPasantia,
     deleteDiasPasantia 
@@ -12,6 +13,11 @@ const router = Router();
 // Get all dias pasantia
 router.get('/', async (req: Request, res: Response) => {
     await getAllDiasPasantia(req, res);
+});
+
+// Get dias por pasantia
+router.get('/porPasantia/:idPasantia', async (req: Request, res: Response) => {
+    await getDiasPasantiaPorPasantia(req, res);
 });
 
 // Get dia pasantia by ID

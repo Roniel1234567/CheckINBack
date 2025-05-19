@@ -1,25 +1,36 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Pasantia } from './Pasantia'; // Asegúrate de que esta entidad exista
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Pasantia } from './Pasantia';
 
-@Entity('Dias_pasantia')
+// Enum para los días de la semana
+export enum DiaSemana {
+  LUNES = 'Lunes',
+  MARTES = 'Martes',
+  MIERCOLES = 'Miércoles',
+  JUEVES = 'Jueves',
+  VIERNES = 'Viernes',
+  SABADO = 'Sábado',
+  DOMINGO = 'Domingo'
+}
+
+@Entity('dias_pasantia')
 export class DiasPasantia {
     @PrimaryGeneratedColumn()
     id_diapas!: number;
 
-    @ManyToOne(() => Pasantia, { nullable: false })
-    @JoinColumn({ name: 'Dias_pasantia' })
-    pasantia_diapas!: Pasantia;
+    @ManyToOne(() => Pasantia, { nullable: true })
+    @JoinColumn({ name: 'id_pas' })
+    pasantia?: Pasantia;
 
-    @Column({ type: 'int', nullable: false })
-    dia_semana!: number;
+    @Column({
+      type: 'enum',
+      enum: DiaSemana,
+      nullable: true
+    })
+    dia_semana?: DiaSemana;
 
-    @CreateDateColumn({ name: 'Dias_pasantia' })
-    creacion_diapas!: Date;
-
-    constructor(pasantia_diapas: Pasantia, dia_semana: number) {
-        this.pasantia_diapas = pasantia_diapas;
-        this.dia_semana = dia_semana;
-        this.creacion_diapas = new Date();
+    constructor(pasantia?: Pasantia, dia_semana?: DiaSemana) {
+        if (pasantia) this.pasantia = pasantia;
+        if (dia_semana) this.dia_semana = dia_semana;
     }
 }
 

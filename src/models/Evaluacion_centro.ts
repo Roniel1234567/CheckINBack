@@ -6,9 +6,9 @@ export class EvaluacionCentroTrabajo {
   @PrimaryGeneratedColumn()
   id_eval_centro: number;
 
-  @ManyToOne(() => Pasantia)
+  @ManyToOne(() => Pasantia, { nullable: false })
   @JoinColumn({ name: 'pasantia_eval_centro' })
-  pasantia_eval_centro: Pasantia;
+  pasantia_eval_centro?: Pasantia;
 
   @Column({ type: 'int' })
   espacio_trabajo_eval: number;
@@ -27,7 +27,6 @@ export class EvaluacionCentroTrabajo {
 
   constructor() {
     this.id_eval_centro = 0;
-    this.pasantia_eval_centro = new Pasantia();
     this.espacio_trabajo_eval = 0;
     this.asignacion_tareas_eval = 0;
     this.disponibilidad_dudas_eval = 0;

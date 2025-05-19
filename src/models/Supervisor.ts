@@ -1,15 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Usuario } from './User';
 import { Contacto } from './Contacto';
 
 @Entity('supervisor')
 export class Supervisor {
   @PrimaryGeneratedColumn()
   id_sup!: number;
-
-  @ManyToOne(() => Usuario, { nullable: false })
-  @JoinColumn({ name: 'usuario_sup' })
-  usuario_sup!: Usuario;
 
   @Column({ type: 'varchar', length: 100 })
   nombre_sup!: string;
@@ -21,10 +16,10 @@ export class Supervisor {
   @JoinColumn({ name: 'contacto_sup' })
   contacto_sup!: Contacto;
 
-  @CreateDateColumn({ name: 'creacion_usu' })
-  creacion_usu!: Date;
+  @CreateDateColumn({ name: 'creacion_sup' })
+  creacion_sup!: Date;
 
   constructor() {
-    this.creacion_usu = new Date();
+    this.creacion_sup = new Date();
   }
 }
