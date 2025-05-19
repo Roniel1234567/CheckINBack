@@ -11,7 +11,7 @@ export class CalificacionEstudiante {
 
   @ManyToOne(() => EvaluacionEstudiante, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_evaluacion_estudiante' })
-  evaluacion_estudiante: EvaluacionEstudiante;
+  evaluacion_estudiante!: EvaluacionEstudiante;
 
   constructor() {
     this.id_calificacion = 0;
