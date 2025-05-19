@@ -25,6 +25,7 @@ import { EvaluacionEstudiante } from "./models/Evaluacion_estudiantes";
 import { Supervisor } from "./models/Supervisor";
 import { Excusa } from "./models/Excusa";
 import { AsistenciaPasantia } from "./models/Asistencia";
+import { CalificacionEstudiante } from "./models/CalificacionEstudiante";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -63,7 +64,8 @@ export const AppDataSource = new DataSource({
         EvaluacionEstudiante,
         Supervisor,
         Excusa,
-        AsistenciaPasantia
+        AsistenciaPasantia,
+        CalificacionEstudiante
     ],
     migrations: [],
     subscribers: []

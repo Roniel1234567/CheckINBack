@@ -32,6 +32,7 @@ import docEstudianteRoutes from './routes/DocEstudianteRoutes';
 import personaContactoEmpresaRoutes from './routes/PersonaContactoEmpresaRoutes';
 import personaContactoEstudianteRoutes from './routes/PersonaContactoEstudianteRoutes';
 import polizaRoutes from './routes/PolizaRoutes';
+import calificacionEstudianteRoutes from './routes/CalificacionEstudianteRoutes';
 
 // Location routes
 import ciudadRoutes from './routes/CiudadRoutes';
@@ -86,6 +87,7 @@ app.use('/api/docs-estudiante', docEstudianteRoutes);
 app.use('/api/persona-contacto-empresa', personaContactoEmpresaRoutes);
 app.use('/api/persona-contacto-estudiante', personaContactoEstudianteRoutes);
 app.use('/api/polizas', polizaRoutes);
+app.use('/api/calificaciones-estudiante', calificacionEstudianteRoutes);
 
 // Location routes
 app.use('/api/ciudades', ciudadRoutes);
