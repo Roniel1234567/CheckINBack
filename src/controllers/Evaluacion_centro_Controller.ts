@@ -7,10 +7,29 @@ const evaluacionRepository = AppDataSource.getRepository(EvaluacionCentroTrabajo
 // Get all evaluaciones
 export const getAllEvaluacionesCentro = async (req: Request, res: Response) => {
     try {
-        const evaluaciones = await evaluacionRepository.find();
+        const evaluaciones = await evaluacionRepository.find({
+            relations: ['pasantia_eval_centro', 'pasantia_eval_centro.centro_pas']
+        });
         return res.json(evaluaciones);
     } catch (error) {
         return res.status(500).json({ message: 'Error al obtener evaluaciones' });
+    }
+};
+
+// Añadir método para obtener evaluaciones por centro
+export const getEvaluacionesByCentro = async (req: Request, res: Response) => {
+    try {
+        const { idCentro } = req.params;
+        const evaluaciones = await evaluacionRepository
+            .createQueryBuilder('evaluacion')
+            .innerJoinAndSelect('evaluacion.pasantia_eval_centro', 'pasantia')
+            .innerJoinAndSelect('pasantia.centro_pas', 'centro')
+            .where('centro.id_centro = :idCentro', { idCentro })
+            .getMany();
+            
+        return res.json(evaluaciones);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al obtener evaluaciones por centro' });
     }
 };
 

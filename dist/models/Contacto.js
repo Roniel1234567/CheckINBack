@@ -13,24 +13,21 @@ exports.Contacto = void 0;
 const typeorm_1 = require("typeorm");
 let Contacto = class Contacto {
     constructor() {
-        this.id_contacto = 0;
-        this.telefono_contacto = '';
-        this.email_contacto = '';
         this.estado_contacto = 'Activo';
         this.creacion_contacto = new Date();
     }
 };
 exports.Contacto = Contacto;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    (0, typeorm_1.PrimaryGeneratedColumn)({ name: 'id_contacto' }),
     __metadata("design:type", Number)
 ], Contacto.prototype, "id_contacto", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'char', length: 12 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, name: 'telefono_contacto' }),
     __metadata("design:type", String)
 ], Contacto.prototype, "telefono_contacto", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, name: 'email_contacto' }),
     __metadata("design:type", String)
 ], Contacto.prototype, "email_contacto", void 0);
 __decorate([

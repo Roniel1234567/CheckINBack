@@ -43,6 +43,8 @@ export const createPlaza = async (req: Request, res: Response): Promise<Response
     try {
         const newPlaza = plazasRepository.create({
             ...req.body,
+            estado: req.body.estado || 'Activa',
+            genero: req.body.genero || 'Ambos',
             creacion_plaza: new Date()
         });
         const savedPlaza = await plazasRepository.save(newPlaza);
@@ -68,7 +70,11 @@ export const updatePlaza = async (req: Request, res: Response): Promise<Response
             return res.status(404).json({ message: 'Plaza no encontrada' });
         }
 
-        plazasRepository.merge(plaza, req.body);
+        plazasRepository.merge(plaza, {
+            ...req.body,
+            estado: req.body.estado || plaza.estado,
+            genero: req.body.genero || plaza.genero
+        });
         const updatedPlaza = await plazasRepository.save(plaza);
         return res.status(200).json(updatedPlaza);
     } catch (error) {

@@ -32,4 +32,8 @@ router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, userController_1.deleteUser)(req, res);
 }));
+// Buscar usuario por nombre de usuario
+router.get('/buscar/:username', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, userController_1.getUserByUsername)(req, res);
+}));
 exports.default = router;

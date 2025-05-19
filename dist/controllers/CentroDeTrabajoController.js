@@ -9,20 +9,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSectoresByCiudad = exports.getCiudadesByProvincia = exports.deleteCentroTrabajo = exports.updateCentroTrabajo = exports.createCentroTrabajo = exports.getCentroTrabajoById = exports.getAllCentrosTrabajo = void 0;
+exports.validarCentro = exports.getCentrosPendientes = exports.existeNombreCentro = exports.getSectoresByCiudad = exports.getCiudadesByProvincia = exports.deleteCentroTrabajo = exports.updateCentroTrabajo = exports.createCentroTrabajo = exports.getCentroTrabajoById = exports.getAllCentrosTrabajo = void 0;
 const data_source_1 = require("../data-source");
 const CentroDeTrabajo_1 = require("../models/CentroDeTrabajo");
 const Direccion_1 = require("../models/Direccion");
 const Contacto_1 = require("../models/Contacto");
 const Ciudad_1 = require("../models/Ciudad");
 const Sector_1 = require("../models/Sector");
+const PersonaContactoEmpresa_1 = require("../models/PersonaContactoEmpresa");
 const centroTrabajoRepository = data_source_1.AppDataSource.getRepository(CentroDeTrabajo_1.CentroDeTrabajo);
 const direccionRepository = data_source_1.AppDataSource.getRepository(Direccion_1.Direccion);
 const contactoRepository = data_source_1.AppDataSource.getRepository(Contacto_1.Contacto);
+const personaContactoEmpresaRepository = data_source_1.AppDataSource.getRepository(PersonaContactoEmpresa_1.PersonaContactoEmpresa);
 const getAllCentrosTrabajo = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const centros = yield centroTrabajoRepository.find({
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
         return res.json(centros);
     }
@@ -40,7 +50,15 @@ const getCentroTrabajoById = (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const centro = yield centroTrabajoRepository.findOne({
             where: { id_centro: id },
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
         if (!centro) {
             return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
@@ -58,14 +76,16 @@ const createCentroTrabajo = (req, res) => __awaiter(void 0, void 0, void 0, func
     yield queryRunner.connect();
     yield queryRunner.startTransaction();
     try {
-        const { nombre_centro, direccion, contacto } = req.body;
+        const nombre_centro = req.body.nombre_centro;
+        const direccion = req.body.direccion || req.body.direccion_centro;
+        const contacto = req.body.contacto || req.body.contacto_centro;
         if (!nombre_centro || !direccion || !contacto) {
             return res.status(400).json({
                 message: 'Faltan datos requeridos',
                 required: {
                     nombre_centro: 'string',
                     direccion: {
-                        sector_dir: 'number',
+                        sector_dir: 'number (requerido)',
                         calle_dir: 'string',
                         num_res_dir: 'string'
                     },
@@ -76,8 +96,31 @@ const createCentroTrabajo = (req, res) => __awaiter(void 0, void 0, void 0, func
                 }
             });
         }
+        // Validación de unicidad para nombre_centro
+        const existeNombre = yield data_source_1.AppDataSource.getRepository(CentroDeTrabajo_1.CentroDeTrabajo).findOne({ where: { nombre_centro } });
+        if (existeNombre) {
+            yield queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un centro de trabajo con ese nombre.' });
+        }
+        // Validación de unicidad para telefono_contacto
+        const existeTelefono = yield data_source_1.AppDataSource.getRepository(Contacto_1.Contacto).findOne({ where: { telefono_contacto: contacto.telefono_contacto } });
+        if (existeTelefono) {
+            yield queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese teléfono.' });
+        }
+        // Validación de unicidad para email_contacto
+        const existeCorreo = yield data_source_1.AppDataSource.getRepository(Contacto_1.Contacto).findOne({ where: { email_contacto: contacto.email_contacto } });
+        if (existeCorreo) {
+            yield queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese correo electrónico.' });
+        }
+        const sector = yield data_source_1.AppDataSource.getRepository(Sector_1.Sector).findOne({ where: { id_sec: direccion.sector_dir } });
+        if (!sector) {
+            yield queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Sector no encontrado' });
+        }
         const newDireccion = queryRunner.manager.create(Direccion_1.Direccion, {
-            sector_dir: direccion.sector_dir,
+            sector_dir: sector,
             calle_dir: direccion.calle_dir,
             num_res_dir: direccion.num_res_dir,
             estado_dir: 'Activo'
@@ -93,7 +136,9 @@ const createCentroTrabajo = (req, res) => __awaiter(void 0, void 0, void 0, func
             nombre_centro,
             estado_centro: 'Activo',
             direccion_centro: savedDireccion,
-            contacto_centro: savedContacto
+            contacto_centro: savedContacto,
+            usuario: req.body.id_usu ? { id_usuario: req.body.id_usu } : undefined,
+            validacion: req.body.validacion || 'Pendiente'
         });
         const savedCentro = yield queryRunner.manager.save(CentroDeTrabajo_1.CentroDeTrabajo, newCentro);
         yield queryRunner.commitTransaction();
@@ -118,13 +163,71 @@ const updateCentroTrabajo = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (isNaN(id)) {
             return res.status(400).json({ message: 'ID inválido' });
         }
+        // Busca el centro con sus relaciones profundas
         const centro = yield centroTrabajoRepository.findOne({
-            where: { id_centro: id }
+            where: { id_centro: id },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
         if (!centro) {
             return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
         }
-        centroTrabajoRepository.merge(centro, req.body);
+        // Actualiza dirección si viene en el body
+        if (req.body.direccion_centro) {
+            const dir = centro.direccion_centro;
+            if (dir) {
+                dir.calle_dir = req.body.direccion_centro.calle_dir || dir.calle_dir;
+                dir.num_res_dir = req.body.direccion_centro.num_res_dir || dir.num_res_dir;
+                dir.estado_dir = req.body.direccion_centro.estado_dir || dir.estado_dir;
+                if (req.body.direccion_centro.sector_dir) {
+                    // Busca el sector y lo asigna
+                    const sector = yield data_source_1.AppDataSource.getRepository(Sector_1.Sector).findOne({ where: { id_sec: req.body.direccion_centro.sector_dir } });
+                    if (sector)
+                        dir.sector_dir = sector;
+                }
+                yield direccionRepository.save(dir);
+            }
+        }
+        // Actualiza contacto si viene en el body
+        if (req.body.contacto_centro) {
+            const contacto = centro.contacto_centro;
+            if (contacto) {
+                contacto.telefono_contacto = req.body.contacto_centro.telefono_contacto || contacto.telefono_contacto;
+                contacto.email_contacto = req.body.contacto_centro.email_contacto || contacto.email_contacto;
+                contacto.estado_contacto = req.body.contacto_centro.estado_contacto || contacto.estado_contacto;
+                yield contactoRepository.save(contacto);
+            }
+        }
+        // Actualiza persona de contacto de empresa si viene en el body
+        if (req.body.persona_contacto_empresa) {
+            // Busca la persona de contacto por el id del centro
+            const personaContacto = yield personaContactoEmpresaRepository.findOne({
+                where: { centro_trabajo: { id_centro: id } }
+            });
+            if (personaContacto) {
+                personaContacto.nombre_persona_contacto = req.body.persona_contacto_empresa.nombre_persona_contacto || personaContacto.nombre_persona_contacto;
+                personaContacto.apellido_persona_contacto = req.body.persona_contacto_empresa.apellido_persona_contacto || personaContacto.apellido_persona_contacto;
+                personaContacto.telefono = req.body.persona_contacto_empresa.telefono || personaContacto.telefono;
+                personaContacto.extension = req.body.persona_contacto_empresa.extension || personaContacto.extension;
+                personaContacto.departamento = req.body.persona_contacto_empresa.departamento || personaContacto.departamento;
+                yield personaContactoEmpresaRepository.save(personaContacto);
+            }
+        }
+        // Actualiza los campos simples del centro
+        centro.nombre_centro = req.body.nombre_centro || centro.nombre_centro;
+        centro.estado_centro = req.body.estado_centro || centro.estado_centro;
+        // Actualiza validacion si viene en el body
+        if (req.body.validacion) {
+            centro.validacion = req.body.validacion;
+        }
+        // Guarda el centro (sin sobrescribir direccion_centro ni contacto_centro)
         const updatedCentro = yield centroTrabajoRepository.save(centro);
         return res.status(200).json(updatedCentro);
     }
@@ -185,3 +288,55 @@ const getSectoresByCiudad = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getSectoresByCiudad = getSectoresByCiudad;
+const existeNombreCentro = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const nombre = req.params.nombre;
+    if (!nombre) {
+        return res.status(400).json({ message: 'Nombre requerido' });
+    }
+    const existe = yield centroTrabajoRepository.findOne({ where: { nombre_centro: nombre } });
+    return res.json({ exists: !!existe });
+});
+exports.existeNombreCentro = existeNombreCentro;
+const getCentrosPendientes = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const centros = yield centroTrabajoRepository.find({
+            where: { validacion: 'Pendiente' },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
+        });
+        return res.json(centros);
+    }
+    catch (error) {
+        console.error('Error al obtener centros pendientes:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+});
+exports.getCentrosPendientes = getCentrosPendientes;
+const validarCentro = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const id = parseInt(req.params.id);
+        const { validacion } = req.body;
+        if (isNaN(id) || !validacion) {
+            return res.status(400).json({ message: 'ID o validación inválidos' });
+        }
+        const centro = yield centroTrabajoRepository.findOne({ where: { id_centro: id } });
+        if (!centro) {
+            return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
+        }
+        centro.validacion = validacion;
+        yield centroTrabajoRepository.save(centro);
+        return res.status(200).json({ message: 'Centro validado correctamente', centro });
+    }
+    catch (error) {
+        console.error('Error al validar centro de trabajo:', error);
+        return res.status(500).json({ message: 'Error interno al validar centro de trabajo' });
+    }
+});
+exports.validarCentro = validarCentro;

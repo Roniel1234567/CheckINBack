@@ -5,58 +5,56 @@ import { Taller } from './Taller';
 import { Direccion } from './Direccion';
 import { CicloEscolar } from './CicloEscolar';
 import { FamiliaProfesional } from './familia_profecional'; // Ajusta la ruta según corresponda
+import { Poliza } from './Poliza';
 
 @Entity('estudiante')
 export class Estudiante {
   @Column({ type: 'varchar', default: 'Cédula' })
-  tipo_documento_est: string;
+  tipo_documento_est!: string;
 
   @PrimaryColumn({ type: 'varchar', length: 20 })
-  documento_id_est: string;
+  documento_id_est!: string;
 
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'usuario_est' })
-  usuario_est: Usuario;
+  usuario_est!: Usuario;
 
   @Column({ type: 'varchar', length: 100 })
-  nombre_est: string;
+  nombre_est!: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   seg_nombre_est?: string;
 
   @Column({ type: 'varchar', length: 100 })
-  apellido_est: string;
+  apellido_est!: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   seg_apellido_est?: string;
 
   @Column({ type: 'date' })
-  fecha_nac_est: Date;
+  fecha_nac_est!: Date;
 
   @ManyToOne(() => Contacto)
   @JoinColumn({ name: 'contacto_est' })
-  contacto_est: Contacto;
+  contacto_est!: Contacto;
 
   @ManyToOne(() => Taller)
   @JoinColumn({ name: 'taller_est' })
-  taller_est: Taller;
+  taller_est!: Taller;
 
   @ManyToOne(() => Direccion)
   @JoinColumn({ name: 'direccion_id' })
-  direccion_id: Direccion;
+  direccion_id!: Direccion;
 
   @ManyToOne(() => CicloEscolar)
   @JoinColumn({ name: 'ciclo_escolar_est' })
-  ciclo_escolar_est: CicloEscolar;
+  ciclo_escolar_est!: CicloEscolar;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   horaspasrealizadas_est?: number;
 
-  @Column({ type: 'varchar', length: 150, nullable: true })
-  nombre_poliza?: string;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  numero_poliza?: string;
+  @CreateDateColumn({ type: 'timestamp' })
+  creacion_est!: Date;
 
   @Column({ type: 'date', nullable: true })
   fecha_inicio_pasantia?: Date;
@@ -64,8 +62,12 @@ export class Estudiante {
   @Column({ type: 'date', nullable: true })
   fecha_fin_pasantia?: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  creacion_est: Date;
+  @ManyToOne(() => Poliza, { nullable: true })
+  @JoinColumn({ name: 'id_poliza' })
+  poliza?: Poliza;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  nacionalidad?: string;
 
   constructor() {
     this.tipo_documento_est = 'Cédula';
@@ -84,8 +86,6 @@ export class Estudiante {
     
     // Inicialización de campos de pasantía y póliza
     this.horaspasrealizadas_est = 0;
-    this.nombre_poliza = '';
-    this.numero_poliza = '';
     this.fecha_inicio_pasantia = undefined;
     this.fecha_fin_pasantia = undefined;
   }

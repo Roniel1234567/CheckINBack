@@ -49,7 +49,7 @@ const getPlazaById = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getPlazaById = getPlazaById;
 const createPlaza = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const newPlaza = plazasRepository.create(Object.assign(Object.assign({}, req.body), { creacion_plaza: new Date() }));
+        const newPlaza = plazasRepository.create(Object.assign(Object.assign({}, req.body), { estado: req.body.estado || 'Activa', genero: req.body.genero || 'Ambos', creacion_plaza: new Date() }));
         const savedPlaza = yield plazasRepository.save(newPlaza);
         return res.status(201).json(savedPlaza);
     }
@@ -71,7 +71,7 @@ const updatePlaza = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!plaza) {
             return res.status(404).json({ message: 'Plaza no encontrada' });
         }
-        plazasRepository.merge(plaza, req.body);
+        plazasRepository.merge(plaza, Object.assign(Object.assign({}, req.body), { estado: req.body.estado || plaza.estado, genero: req.body.genero || plaza.genero }));
         const updatedPlaza = yield plazasRepository.save(plaza);
         return res.status(200).json(updatedPlaza);
     }

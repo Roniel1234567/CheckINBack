@@ -27,7 +27,25 @@ export const getPersonaContactoById = async (req: Request, res: Response) => {
     }
 };
 
+export const getPersonaContactoByCentro = async (req: Request, res: Response) => {
+    try {
+        const idCentro = Number(req.params.idCentro);
+        if (isNaN(idCentro)) {
+            return res.status(400).json({ message: 'ID de centro inválido' });
+        }
+        const contacto = await personaContactoRepository.findOne({
+            where: { centro_trabajo: { id_centro: idCentro } },
+            relations: ['centro_trabajo']
+        });
+        if (!contacto) return res.status(404).json({ message: 'Contacto no encontrado' });
+        return res.json(contacto);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error al obtener el contacto de persona por centro' });
+    }
+};
+
 export const createPersonaContacto = async (req: Request, res: Response) => {
+    console.log('BODY RECIBIDO:', req.body);
     try {
         const data = req.body;
         // Mapear centro_trabajo a objeto si es id
@@ -38,7 +56,8 @@ export const createPersonaContacto = async (req: Request, res: Response) => {
         await personaContactoRepository.save(nuevoContacto);
         return res.status(201).json(nuevoContacto);
     } catch (error) {
-        return res.status(500).json({ message: 'Error al crear el contacto de persona' });
+        console.error('ERROR AL CREAR PERSONA CONTACTO:', error);
+        return res.status(500).json({ message: 'Error al crear el contacto de persona', error: error instanceof Error ? error.message : error });
     }
 };
 

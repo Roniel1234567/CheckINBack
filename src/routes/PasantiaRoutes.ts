@@ -4,7 +4,8 @@ import {
     getPasantiaById,
     createPasantia,
     updatePasantia,
-    deletePasantia 
+    deletePasantia,
+    getPasantiasPendientesEvaluacion
 } from '../controllers/PasantiaController';
 
 const router = Router();
@@ -12,6 +13,11 @@ const router = Router();
 // Get all pasantias
 router.get('/', async (req: Request, res: Response) => {
     await getAllPasantias(req, res);
+});
+
+// Get pasantias pendientes de evaluación
+router.get('/pendientesEvaluacion', async (req: Request, res: Response) => {
+    await getPasantiasPendientesEvaluacion(req, res);
 });
 
 // Get pasantia by ID

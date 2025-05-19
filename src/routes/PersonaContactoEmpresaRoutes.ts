@@ -4,7 +4,8 @@ import {
     getPersonaContactoById,
     createPersonaContacto,
     updatePersonaContacto,
-    deletePersonaContacto
+    deletePersonaContacto,
+    getPersonaContactoByCentro
 } from '../controllers/PersonaContactoEmpresaController';
 
 const router = Router();
@@ -32,6 +33,11 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Eliminar contacto
 router.delete('/:id', async (req: Request, res: Response) => {
     await deletePersonaContacto(req, res);
+});
+
+// Obtener contacto por id de centro de trabajo
+router.get('/centro/:idCentro', async (req: Request, res: Response) => {
+    await getPersonaContactoByCentro(req, res);
 });
 
 export default router; 

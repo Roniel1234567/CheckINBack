@@ -24,6 +24,14 @@ router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, EstudianteController_1.createEstudiante)(req, res);
 }));
+// Ruta para actualizar fechas de pasantía y horas realizadas
+router.put('/:id/fechas', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, EstudianteController_1.updateFecha)(req, res);
+}));
+// Ruta para actualizar solo la póliza del estudiante
+router.put('/:id/poliza', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, EstudianteController_1.updateEstudiantePoliza)(req, res);
+}));
 // Update estudiante
 router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, EstudianteController_1.updateEstudiante)(req, res);

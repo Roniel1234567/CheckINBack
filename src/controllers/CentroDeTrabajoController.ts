@@ -5,15 +5,25 @@ import { Direccion } from '../models/Direccion';
 import { Contacto } from '../models/Contacto';
 import { Ciudad } from '../models/Ciudad';
 import { Sector } from '../models/Sector';
+import { PersonaContactoEmpresa } from '../models/PersonaContactoEmpresa';
 
 const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
 const direccionRepository = AppDataSource.getRepository(Direccion);
 const contactoRepository = AppDataSource.getRepository(Contacto);
+const personaContactoEmpresaRepository = AppDataSource.getRepository(PersonaContactoEmpresa);
 
 export const getAllCentrosTrabajo = async (_req: Request, res: Response): Promise<Response> => {
     try {
         const centros = await centroTrabajoRepository.find({
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
         return res.json(centros);
     } catch (error) {
@@ -31,7 +41,15 @@ export const getCentroTrabajoById = async (req: Request, res: Response): Promise
 
         const centro = await centroTrabajoRepository.findOne({
             where: { id_centro: id },
-            relations: ['direccion_centro', 'contacto_centro']
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
 
         if (!centro) {
@@ -73,6 +91,27 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             });
         }
 
+        // Validación de unicidad para nombre_centro
+        const existeNombre = await AppDataSource.getRepository(CentroDeTrabajo).findOne({ where: { nombre_centro } });
+        if (existeNombre) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un centro de trabajo con ese nombre.' });
+        }
+
+        // Validación de unicidad para telefono_contacto
+        const existeTelefono = await AppDataSource.getRepository(Contacto).findOne({ where: { telefono_contacto: contacto.telefono_contacto } });
+        if (existeTelefono) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese teléfono.' });
+        }
+
+        // Validación de unicidad para email_contacto
+        const existeCorreo = await AppDataSource.getRepository(Contacto).findOne({ where: { email_contacto: contacto.email_contacto } });
+        if (existeCorreo) {
+            await queryRunner.rollbackTransaction();
+            return res.status(400).json({ message: 'Ya existe un contacto con ese correo electrónico.' });
+        }
+
         const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: direccion.sector_dir } });
         if (!sector) {
             await queryRunner.rollbackTransaction();
@@ -98,7 +137,9 @@ export const createCentroTrabajo = async (req: Request, res: Response): Promise<
             nombre_centro,
             estado_centro: 'Activo',
             direccion_centro: savedDireccion,
-            contacto_centro: savedContacto
+            contacto_centro: savedContacto,
+            usuario: req.body.id_usu ? { id_usuario: req.body.id_usu } : undefined,
+            validacion: req.body.validacion || 'Pendiente'
         });
         
         const savedCentro = await queryRunner.manager.save(CentroDeTrabajo, newCentro);
@@ -125,15 +166,77 @@ export const updateCentroTrabajo = async (req: Request, res: Response): Promise<
             return res.status(400).json({ message: 'ID inválido' });
         }
 
+        // Busca el centro con sus relaciones profundas
         const centro = await centroTrabajoRepository.findOne({
-            where: { id_centro: id }
+            where: { id_centro: id },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
         });
 
         if (!centro) {
             return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
         }
 
-        centroTrabajoRepository.merge(centro, req.body);
+        // Actualiza dirección si viene en el body
+        if (req.body.direccion_centro) {
+            const dir = centro.direccion_centro;
+            if (dir) {
+                dir.calle_dir = req.body.direccion_centro.calle_dir || dir.calle_dir;
+                dir.num_res_dir = req.body.direccion_centro.num_res_dir || dir.num_res_dir;
+                dir.estado_dir = req.body.direccion_centro.estado_dir || dir.estado_dir;
+                if (req.body.direccion_centro.sector_dir) {
+                    // Busca el sector y lo asigna
+                    const sector = await AppDataSource.getRepository(Sector).findOne({ where: { id_sec: req.body.direccion_centro.sector_dir } });
+                    if (sector) dir.sector_dir = sector;
+                }
+                await direccionRepository.save(dir);
+            }
+        }
+
+        // Actualiza contacto si viene en el body
+        if (req.body.contacto_centro) {
+            const contacto = centro.contacto_centro;
+            if (contacto) {
+                contacto.telefono_contacto = req.body.contacto_centro.telefono_contacto || contacto.telefono_contacto;
+                contacto.email_contacto = req.body.contacto_centro.email_contacto || contacto.email_contacto;
+                contacto.estado_contacto = req.body.contacto_centro.estado_contacto || contacto.estado_contacto;
+                await contactoRepository.save(contacto);
+            }
+        }
+
+        // Actualiza persona de contacto de empresa si viene en el body
+        if (req.body.persona_contacto_empresa) {
+            // Busca la persona de contacto por el id del centro
+            const personaContacto = await personaContactoEmpresaRepository.findOne({
+                where: { centro_trabajo: { id_centro: id } }
+            });
+            if (personaContacto) {
+                personaContacto.nombre_persona_contacto = req.body.persona_contacto_empresa.nombre_persona_contacto || personaContacto.nombre_persona_contacto;
+                personaContacto.apellido_persona_contacto = req.body.persona_contacto_empresa.apellido_persona_contacto || personaContacto.apellido_persona_contacto;
+                personaContacto.telefono = req.body.persona_contacto_empresa.telefono || personaContacto.telefono;
+                personaContacto.extension = req.body.persona_contacto_empresa.extension || personaContacto.extension;
+                personaContacto.departamento = req.body.persona_contacto_empresa.departamento || personaContacto.departamento;
+                await personaContactoEmpresaRepository.save(personaContacto);
+            }
+        }
+
+        // Actualiza los campos simples del centro
+        centro.nombre_centro = req.body.nombre_centro || centro.nombre_centro;
+        centro.estado_centro = req.body.estado_centro || centro.estado_centro;
+
+        // Actualiza validacion si viene en el body
+        if (req.body.validacion) {
+            centro.validacion = req.body.validacion;
+        }
+
+        // Guarda el centro (sin sobrescribir direccion_centro ni contacto_centro)
         const updatedCentro = await centroTrabajoRepository.save(centro);
         return res.status(200).json(updatedCentro);
     } catch (error) {
@@ -190,5 +293,55 @@ export const getSectoresByCiudad = async (req: Request, res: Response): Promise<
     } catch (error) {
         console.error('Error al obtener sectores:', error);
         return res.status(500).json({ message: 'Error al obtener sectores' });
+    }
+};
+
+export const existeNombreCentro = async (req: Request, res: Response): Promise<Response> => {
+    const nombre = req.params.nombre;
+    if (!nombre) {
+        return res.status(400).json({ message: 'Nombre requerido' });
+    }
+    const existe = await centroTrabajoRepository.findOne({ where: { nombre_centro: nombre } });
+    return res.json({ exists: !!existe });
+};
+
+export const getCentrosPendientes = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const centros = await centroTrabajoRepository.find({
+            where: { validacion: 'Pendiente' },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
+        });
+        return res.json(centros);
+    } catch (error) {
+        console.error('Error al obtener centros pendientes:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
+export const validarCentro = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const id = parseInt(req.params.id);
+        const { validacion } = req.body;
+        if (isNaN(id) || !validacion) {
+            return res.status(400).json({ message: 'ID o validación inválidos' });
+        }
+        const centro = await centroTrabajoRepository.findOne({ where: { id_centro: id } });
+        if (!centro) {
+            return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
+        }
+        centro.validacion = validacion;
+        await centroTrabajoRepository.save(centro);
+        return res.status(200).json({ message: 'Centro validado correctamente', centro });
+    } catch (error) {
+        console.error('Error al validar centro de trabajo:', error);
+        return res.status(500).json({ message: 'Error interno al validar centro de trabajo' });
     }
 };

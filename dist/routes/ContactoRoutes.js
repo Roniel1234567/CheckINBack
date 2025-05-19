@@ -32,4 +32,12 @@ router.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 router.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, ContactoControllers_1.deleteContacto)(req, res);
 }));
+// Verificar si existe un contacto con ese teléfono
+router.get('/existe-telefono/:telefono', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, ContactoControllers_1.existeTelefonoContacto)(req, res);
+}));
+// Verificar si existe un contacto con ese email
+router.get('/existe-email/:email', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, ContactoControllers_1.existeEmailContacto)(req, res);
+}));
 exports.default = router;

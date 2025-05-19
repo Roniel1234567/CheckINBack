@@ -32,6 +32,29 @@ export class Usuario {
     })
     creacion_usuario!: Date;
 
+    @Column({ 
+        type: 'varchar', 
+        name: 'email_usu',
+        length: 100, 
+        nullable: true
+    })
+    email_usuario?: string;
+
+    @Column({ 
+        type: 'varchar', 
+        name: 'reset_token', 
+        length: 255, 
+        nullable: true 
+    })
+    resetToken?: string;
+
+    @Column({ 
+        type: 'timestamp', 
+        name: 'reset_token_expiry', 
+        nullable: true 
+    })
+    resetTokenExpiry?: Date;
+
     @ManyToOne(() => Rol)
     @JoinColumn({ name: 'rol_usu' })
     rol?: Rol;

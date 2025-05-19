@@ -18,6 +18,9 @@ export class Taller {
   @Column({ type: 'varchar', length: 8, unique: true })
   cod_titulo_taller!: string;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2 })
+  horaspas_taller!: number;
+
   @Column({
     type: 'enum',
     enum: ['Activo', 'Inactivo'],
@@ -31,6 +34,7 @@ export class Taller {
       nombre_taller: string = '',
       familia_taller: FamiliaProfesional, // ← ¡Este es obligatorio!
       cod_titulo_taller: string = '',
+      horaspas_taller: number = 0,
       estado_taller: EstadoTallerType = 'Activo'
    
   ) { 
@@ -38,6 +42,7 @@ export class Taller {
     this.nombre_taller = nombre_taller;
     this.familia_taller = familia_taller;
     this.cod_titulo_taller = cod_titulo_taller;
+    this.horaspas_taller = horaspas_taller;
     this.estado_taller = estado_taller;
   }
 }

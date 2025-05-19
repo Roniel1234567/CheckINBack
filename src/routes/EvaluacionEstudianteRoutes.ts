@@ -4,7 +4,8 @@ import {
     getEvaluacionEstudianteById,
     createEvaluacionEstudiante,
     updateEvaluacionEstudiante,
-    deleteEvaluacionEstudiante 
+    deleteEvaluacionEstudiante,
+    getEvaluacionesByEstudiante 
 } from '../controllers/Evaluacion_EstudianteController';
 
 const router = Router();
@@ -12,6 +13,11 @@ const router = Router();
 // Get all evaluaciones estudiante
 router.get('/', async (req: Request, res: Response) => {
     await getAllEvaluacionesEstudiante(req, res);
+});
+
+// Get evaluaciones por estudiante
+router.get('/porEstudiante/:documentoId', async (req: Request, res: Response) => {
+    await getEvaluacionesByEstudiante(req, res);
 });
 
 // Get evaluacion estudiante by ID

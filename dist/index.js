@@ -29,4 +29,19 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         process.exit(1);
     }
 });
+data_source_1.AppDataSource.initialize()
+    .then(() => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Verificando conexión a la base de datos...');
+    const queryRunner = data_source_1.AppDataSource.createQueryRunner();
+    yield queryRunner.connect();
+    // Test queries
+    const provincias = yield queryRunner.query('SELECT * FROM provincia');
+    console.log('Provincias disponibles:', provincias);
+    const ciudades = yield queryRunner.query('SELECT * FROM ciudad LIMIT 5');
+    console.log('Muestra de ciudades:', ciudades);
+    yield queryRunner.release();
+    console.log('✅ Conexión a la base de datos verificada');
+    // ...resto del código
+}))
+    .catch(error => console.error('Error durante la inicialización:', error));
 startServer();
