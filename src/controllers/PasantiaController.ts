@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Pasantia, EstadoPasantia } from '../models/Pasantia';
+import { PlazasCentro } from '../models/Plazas';
 
 const pasantiaRepository = AppDataSource.getRepository(Pasantia);
 
@@ -11,6 +12,7 @@ export const getAllPasantias = async (req: Request, res: Response) => {
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
+            .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
             .addSelect([
                 'supervisor.id_sup',
                 'supervisor.nombre_sup',
@@ -36,6 +38,7 @@ export const getPasantiaById = async (req: Request, res: Response) => {
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
+            .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
             .addSelect([
                 'supervisor.id_sup',
                 'supervisor.nombre_sup',
@@ -63,6 +66,7 @@ export const getPasantiasPendientesEvaluacion = async (req: Request, res: Respon
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
+            .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
             .addSelect([
                 'supervisor.id_sup',
                 'supervisor.nombre_sup',
@@ -84,7 +88,11 @@ export const getPasantiasPendientesEvaluacion = async (req: Request, res: Respon
 
 export const createPasantia = async (req: Request, res: Response) => {
     try {
-        const newPasantia = pasantiaRepository.create(req.body);
+        let body = req.body;
+        if (body.plaza_pas && typeof body.plaza_pas === 'number') {
+            body.plaza_pas = await AppDataSource.getRepository(PlazasCentro).findOneBy({ id_plaza: body.plaza_pas });
+        }
+        const newPasantia = pasantiaRepository.create(body);
         await pasantiaRepository.save(newPasantia);
         return res.status(201).json(newPasantia);
     } catch (error) {
@@ -98,8 +106,11 @@ export const updatePasantia = async (req: Request, res: Response) => {
         const { id } = req.params;
         const pasantia = await pasantiaRepository.findOneBy({ id_pas: parseInt(id) });
         if (!pasantia) return res.status(404).json({ message: 'Pasantía no encontrada' });
-        
-        pasantiaRepository.merge(pasantia, req.body);
+        let body = req.body;
+        if (body.plaza_pas && typeof body.plaza_pas === 'number') {
+            body.plaza_pas = await AppDataSource.getRepository(PlazasCentro).findOneBy({ id_plaza: body.plaza_pas });
+        }
+        pasantiaRepository.merge(pasantia, body);
         await pasantiaRepository.save(pasantia);
         return res.json(pasantia);
     } catch (error) {

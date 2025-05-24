@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 import { Estudiante } from './Estudiante';
 import { CentroDeTrabajo } from './CentroDeTrabajo';
 import { Supervisor } from './Supervisor';
+import { PlazasCentro } from './Plazas';
 
 // Enum para estado de pasantía
 export enum EstadoPasantia {
@@ -28,6 +29,10 @@ export class Pasantia {
   @JoinColumn({ name: 'supervisor_pas' })
   supervisor_pas: Supervisor;
 
+  @ManyToOne(() => PlazasCentro, { nullable: true })
+  @JoinColumn({ name: 'plaza_pas' })
+  plaza_pas?: PlazasCentro;
+
   @Column({ type: 'date' })
   inicio_pas: Date;
 
@@ -49,6 +54,7 @@ export class Pasantia {
     this.estudiante_pas = new Estudiante();
     this.centro_pas = new CentroDeTrabajo();
     this.supervisor_pas = new Supervisor();
+    this.plaza_pas = undefined;
     this.inicio_pas = new Date();
     this.fin_pas = new Date();
     this.estado_pas = EstadoPasantia.PENDIENTE;
