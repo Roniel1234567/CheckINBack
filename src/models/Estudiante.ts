@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Usuario } from './User';
 import { Contacto } from './Contacto';
 import { Taller } from './Taller';
@@ -6,6 +6,7 @@ import { Direccion } from './Direccion';
 import { CicloEscolar } from './CicloEscolar';
 import { FamiliaProfesional } from './familia_profecional'; // Ajusta la ruta según corresponda
 import { Poliza } from './Poliza';
+import { Pasantia } from './Pasantia';
 
 @Entity('estudiante')
 export class Estudiante {
@@ -68,6 +69,9 @@ export class Estudiante {
 
   @Column({ type: 'varchar', length: 100, nullable: true })
   nacionalidad?: string;
+
+  @OneToMany(() => Pasantia, pasantia => pasantia.estudiante_pas)
+  pasantias?: Pasantia[];
 
   constructor() {
     this.tipo_documento_est = 'Cédula';

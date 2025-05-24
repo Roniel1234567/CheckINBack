@@ -4,6 +4,7 @@ import { Estudiante } from '../models/Estudiante';
 import { DocEstudiante } from '../models/DocEstudiante';
 import { Poliza } from '../models/Poliza';
 import { CentroDeTrabajo } from '../models/CentroDeTrabajo';
+import { Pasantia, EstadoPasantia } from '../models/Pasantia';
 
 const estudianteRepository = AppDataSource.getRepository(Estudiante);
 const polizaRepository = AppDataSource.getRepository(Poliza);
@@ -11,14 +12,34 @@ const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
 
 export const getAllEstudiantes = async (_req: Request, res: Response): Promise<Response> => {
     try {
-        const estudiantes = await estudianteRepository.find({
-            relations: ['usuario_est', 'contacto_est', 'taller_est', 'direccion_id', 'ciclo_escolar_est', 'poliza']
-        });
-        const estudiantesConNacionalidad = estudiantes.map(est => ({
+        const estudiantes = await estudianteRepository
+            .createQueryBuilder('estudiante')
+            .leftJoinAndSelect('estudiante.usuario_est', 'usuario')
+            .leftJoinAndSelect('estudiante.contacto_est', 'contacto')
+            .leftJoinAndSelect('estudiante.taller_est', 'taller')
+            .leftJoinAndSelect('estudiante.direccion_id', 'direccion')
+            .leftJoinAndSelect('estudiante.ciclo_escolar_est', 'ciclo')
+            .leftJoinAndSelect('estudiante.poliza', 'poliza')
+            .leftJoin(
+                Pasantia,
+                'pasantia',
+                'pasantia.estudiante_pas = estudiante.documento_id_est AND pasantia.estado_pas != :estadoCancelado',
+                { estadoCancelado: EstadoPasantia.CANCELADA }
+            )
+            .addSelect([
+                'pasantia.id_pas',
+                'pasantia.inicio_pas',
+                'pasantia.fin_pas',
+                'pasantia.estado_pas'
+            ])
+            .getMany();
+
+        const estudiantesConInfo = estudiantes.map(est => ({
             ...est,
             nacionalidad: est.nacionalidad || null
         }));
-        return res.status(200).json(estudiantesConNacionalidad);
+
+        return res.status(200).json(estudiantesConInfo);
     } catch (error) {
         console.error('Error al obtener estudiantes:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
