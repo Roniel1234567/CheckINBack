@@ -26,6 +26,7 @@ import { Supervisor } from "./models/Supervisor";
 import { Excusa } from "./models/Excusa";
 import { AsistenciaPasantia } from "./models/Asistencia";
 import { CalificacionEstudiante } from "./models/CalificacionEstudiante";
+import { Administrador } from './models/Administrador';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -65,7 +66,8 @@ export const AppDataSource = new DataSource({
         Supervisor,
         Excusa,
         AsistenciaPasantia,
-        CalificacionEstudiante
+        CalificacionEstudiante,
+        Administrador
     ],
     migrations: [],
     subscribers: []

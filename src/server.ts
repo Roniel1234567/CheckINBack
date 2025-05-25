@@ -42,6 +42,9 @@ import sectorRoutes from './routes/SectorRoutes';
 // Role routes
 import rolRoutes from './routes/RolRoutes';
 
+// Administrador routes
+import administradorRoutes from './routes/AdministradorRoutes';
+
 dotenv.config();
 
 const app = express();
@@ -148,6 +151,9 @@ app.get('/api/estudiantes', async (req, res) => {
       res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
+
+// Administrador routes
+app.use('/api/administradores', administradorRoutes);
 
 // Error handling middleware
 app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
