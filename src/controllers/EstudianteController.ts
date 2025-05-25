@@ -28,8 +28,6 @@ export const getAllEstudiantes = async (_req: Request, res: Response): Promise<R
             )
             .addSelect([
                 'pasantia.id_pas',
-                'pasantia.inicio_pas',
-                'pasantia.fin_pas',
                 'pasantia.estado_pas'
             ])
             .getMany();
@@ -224,30 +222,6 @@ export const deleteEstudiante = async (req: Request, res: Response): Promise<Res
     }
 };
 
-export const updateFecha = async (req: Request, res: Response) => {
-  console.log('ENTRANDO A updateFecha', req.originalUrl, req.body);
-  const documento_id_est = req.params.id;
-  const { fecha_inicio_pasantia, fecha_fin_pasantia, horaspasrealizadas_est } = req.body;
-
-  try {
-    const result = await estudianteRepository.update(
-      { documento_id_est },
-      { fecha_inicio_pasantia, fecha_fin_pasantia, horaspasrealizadas_est }
-    );
-
-    if (result.affected === 0) {
-      return res.status(404).json({ message: 'Estudiante no encontrado' });
-    }
-
-    // Devuelve el estudiante actualizado
-    const estudiante = await estudianteRepository.findOne({ where: { documento_id_est } });
-    return res.json(estudiante);
-  } catch (error) {
-    console.error('Error al actualizar fechas:', error);
-    return res.status(500).json({ message: 'Error interno al actualizar fechas' });
-  }
-};
-
 export const updateEstudiantePoliza = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { id } = req.params;
@@ -272,5 +246,29 @@ export const updateEstudiantePoliza = async (req: Request, res: Response): Promi
     } catch (error) {
         console.error('Error al actualizar póliza del estudiante:', error);
         return res.status(500).json({ message: 'Error interno al actualizar póliza' });
+    }
+};
+
+export const updateFecha = async (req: Request, res: Response) => {
+    console.log('ENTRANDO A updateFecha', req.originalUrl, req.body);
+    const documento_id_est = req.params.id;
+    const { fecha_inicio_pasantia, fecha_fin_pasantia, horaspasrealizadas_est } = req.body;
+
+    try {
+        const result = await estudianteRepository.update(
+            { documento_id_est },
+            { fecha_inicio_pasantia, fecha_fin_pasantia, horaspasrealizadas_est }
+        );
+
+        if (result.affected === 0) {
+            return res.status(404).json({ message: 'Estudiante no encontrado' });
+        }
+
+        // Devuelve el estudiante actualizado
+        const estudiante = await estudianteRepository.findOne({ where: { documento_id_est } });
+        return res.json(estudiante);
+    } catch (error) {
+        console.error('Error al actualizar fechas:', error);
+        return res.status(500).json({ message: 'Error interno al actualizar fechas' });
     }
 };

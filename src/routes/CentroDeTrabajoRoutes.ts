@@ -7,7 +7,9 @@ import {
     existeNombreCentro,
     updateCentroTrabajo,
     getCentrosPendientes,
-    validarCentro
+    validarCentro,
+    getCentrosAceptados,
+    getCentrosRechazados
 } from '../controllers/CentroDeTrabajoController';
 
 const router = Router();
@@ -47,7 +49,17 @@ router.get('/pendientes', async (req: Request, res: Response) => {
     await getCentrosPendientes(req, res);
 });
 
-// Validar centro de trabajo (ahora acepta PUT)
+// Obtener centros aceptados
+router.get('/validacion/aceptadas', async (req: Request, res: Response) => {
+    await getCentrosAceptados(req, res);
+});
+
+// Obtener centros rechazados
+router.get('/validacion/rechazadas', async (req: Request, res: Response) => {
+    await getCentrosRechazados(req, res);
+});
+
+// Validar centro de trabajo
 router.put('/:id/validar', async (req: Request, res: Response) => {
     await validarCentro(req, res);
 });

@@ -89,6 +89,7 @@ export const getPasantiasPendientesEvaluacion = async (req: Request, res: Respon
 export const createPasantia = async (req: Request, res: Response) => {
     try {
         let body = req.body;
+
         if (body.plaza_pas && typeof body.plaza_pas === 'number') {
             body.plaza_pas = await AppDataSource.getRepository(PlazasCentro).findOneBy({ id_plaza: body.plaza_pas });
         }
@@ -106,7 +107,9 @@ export const updatePasantia = async (req: Request, res: Response) => {
         const { id } = req.params;
         const pasantia = await pasantiaRepository.findOneBy({ id_pas: parseInt(id) });
         if (!pasantia) return res.status(404).json({ message: 'Pasantía no encontrada' });
+        
         let body = req.body;
+
         if (body.plaza_pas && typeof body.plaza_pas === 'number') {
             body.plaza_pas = await AppDataSource.getRepository(PlazasCentro).findOneBy({ id_plaza: body.plaza_pas });
         }

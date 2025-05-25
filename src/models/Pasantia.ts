@@ -33,12 +33,6 @@ export class Pasantia {
   @JoinColumn({ name: 'plaza_pas' })
   plaza_pas?: PlazasCentro;
 
-  @Column({ type: 'date' })
-  inicio_pas: Date;
-
-  @Column({ type: 'date', nullable: true })
-  fin_pas: Date;
-
   @Column({
     type: 'enum',
     enum: EstadoPasantia,
@@ -55,8 +49,6 @@ export class Pasantia {
     this.centro_pas = new CentroDeTrabajo();
     this.supervisor_pas = new Supervisor();
     this.plaza_pas = undefined;
-    this.inicio_pas = new Date();
-    this.fin_pas = new Date();
     this.estado_pas = EstadoPasantia.PENDIENTE;
     this.creacion_pas = new Date();
   }
