@@ -81,6 +81,13 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
             });
         }
 
+        // Validar longitud del código de país si viene en el body
+        if (estudianteData.pasaporte_codigo_pais && estudianteData.pasaporte_codigo_pais.length > 30) {
+            return res.status(400).json({
+                message: 'El código de país del pasaporte no puede exceder los 30 caracteres'
+            });
+        }
+
         // Mapea los campos relacionales a objetos con id
         if (estudianteData.usuario_est)
             estudianteData.usuario_est = { id_usuario: Number(estudianteData.usuario_est) };
@@ -160,6 +167,13 @@ export const updateEstudiante = async (req: Request, res: Response): Promise<Res
             return res.status(400).json({
                 message: 'Valor inválido para sexo_est',
                 valoresPermitidos: ['Masculino', 'Femenino']
+            });
+        }
+
+        // Validar longitud del código de país si viene en el body
+        if (estudianteData.pasaporte_codigo_pais && estudianteData.pasaporte_codigo_pais.length > 30) {
+            return res.status(400).json({
+                message: 'El código de país del pasaporte no puede exceder los 30 caracteres'
             });
         }
 

@@ -38,6 +38,9 @@ export class Estudiante {
   @Column({ type: "enum", enum: ["Masculino", "Femenino"], enumName: "sexo_tipo", nullable: true })
   sexo_est?: "Masculino" | "Femenino";
 
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  pasaporte_codigo_pais?: string;
+
   @ManyToOne(() => Contacto)
   @JoinColumn({ name: 'contacto_est' })
   contacto_est!: Contacto;
@@ -86,6 +89,7 @@ export class Estudiante {
     this.seg_apellido_est = '';
     this.fecha_nac_est = new Date();
     this.sexo_est = undefined;
+    this.pasaporte_codigo_pais = undefined;
     this.contacto_est = new Contacto();
     this.direccion_id = new Direccion();
     this.ciclo_escolar_est = new CicloEscolar();
