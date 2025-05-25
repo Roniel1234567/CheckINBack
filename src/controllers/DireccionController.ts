@@ -68,15 +68,30 @@ export const updateDireccion = async (req: Request, res: Response): Promise<Resp
         }
 
         const direccion = await direccionRepository.findOne({
-            where: { id_dir: id }
+            where: { id_dir: id },
+            relations: ['sector_dir']
         });
 
         if (!direccion) {
             return res.status(404).json({ message: 'Dirección no encontrada' });
         }
 
-        direccionRepository.merge(direccion, req.body);
-        const updatedDireccion = await direccionRepository.save(direccion);
+        if (req.body.sector_dir) {
+            const sector = await AppDataSource.getRepository(Sector).findOne({
+                where: { id_sec: req.body.sector_dir }
+            });
+            if (!sector) {
+                return res.status(400).json({ message: 'Sector no encontrado' });
+            }
+            req.body.sector_dir = sector;
+        }
+
+        const updateData = {
+            ...direccion,
+            ...req.body
+        };
+
+        const updatedDireccion = await direccionRepository.save(updateData);
         return res.status(200).json(updatedDireccion);
     } catch (error) {
         console.error('Error al actualizar dirección:', error);
