@@ -35,6 +35,9 @@ export class Estudiante {
   @Column({ type: 'date' })
   fecha_nac_est!: Date;
 
+  @Column({ type: "enum", enum: ["Masculino", "Femenino"], enumName: "sexo_tipo", nullable: true })
+  sexo_est?: "Masculino" | "Femenino";
+
   @ManyToOne(() => Contacto)
   @JoinColumn({ name: 'contacto_est' })
   contacto_est!: Contacto;
@@ -82,6 +85,7 @@ export class Estudiante {
     this.apellido_est = '';
     this.seg_apellido_est = '';
     this.fecha_nac_est = new Date();
+    this.sexo_est = undefined;
     this.contacto_est = new Contacto();
     this.direccion_id = new Direccion();
     this.ciclo_escolar_est = new CicloEscolar();

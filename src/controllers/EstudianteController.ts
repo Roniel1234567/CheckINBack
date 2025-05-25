@@ -73,6 +73,14 @@ export const createEstudiante = async (req: Request, res: Response): Promise<Res
     try {
         const estudianteData = req.body;
 
+        // Validar el sexo si viene en el body
+        if (estudianteData.sexo_est && !['Masculino', 'Femenino'].includes(estudianteData.sexo_est)) {
+            return res.status(400).json({
+                message: 'Valor inválido para sexo_est',
+                valoresPermitidos: ['Masculino', 'Femenino']
+            });
+        }
+
         // Mapea los campos relacionales a objetos con id
         if (estudianteData.usuario_est)
             estudianteData.usuario_est = { id_usuario: Number(estudianteData.usuario_est) };
@@ -146,6 +154,14 @@ export const updateEstudiante = async (req: Request, res: Response): Promise<Res
     try {
         const { id } = req.params;
         const estudianteData = req.body;
+
+        // Validar el sexo si viene en el body
+        if (estudianteData.sexo_est && !['Masculino', 'Femenino'].includes(estudianteData.sexo_est)) {
+            return res.status(400).json({
+                message: 'Valor inválido para sexo_est',
+                valoresPermitidos: ['Masculino', 'Femenino']
+            });
+        }
 
         if (estudianteData.id_poliza)
             estudianteData.poliza = { id_poliza: Number(estudianteData.id_poliza) };
