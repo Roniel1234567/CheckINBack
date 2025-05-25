@@ -6,6 +6,7 @@ import { Contacto } from '../models/Contacto';
 import { Ciudad } from '../models/Ciudad';
 import { Sector } from '../models/Sector';
 import { PersonaContactoEmpresa } from '../models/PersonaContactoEmpresa';
+import { sendValidacionEmail } from '../services/emailService';
 
 const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
 const direccionRepository = AppDataSource.getRepository(Direccion);
@@ -330,16 +331,41 @@ export const validarCentro = async (req: Request, res: Response): Promise<Respon
     try {
         const id = parseInt(req.params.id);
         const { validacion } = req.body;
+        
         if (isNaN(id) || !validacion) {
             return res.status(400).json({ message: 'ID o validación inválidos' });
         }
-        const centro = await centroTrabajoRepository.findOne({ where: { id_centro: id } });
+
+        const centro = await centroTrabajoRepository.findOne({ 
+            where: { id_centro: id },
+            relations: ['contacto_centro', 'usuario']
+        });
+
         if (!centro) {
             return res.status(404).json({ message: 'Centro de trabajo no encontrado' });
         }
+
         centro.validacion = validacion;
         await centroTrabajoRepository.save(centro);
-        return res.status(200).json({ message: 'Centro validado correctamente', centro });
+
+        // Enviar correo de notificación
+        if (centro.contacto_centro?.email_contacto) {
+            const emailResult = await sendValidacionEmail(
+                centro.contacto_centro.email_contacto,
+                centro.nombre_centro,
+                validacion === 'Aceptada'
+            );
+
+            if (!emailResult.success) {
+                console.error('Error al enviar email de validación:', emailResult.error);
+            }
+        }
+
+        return res.status(200).json({ 
+            message: 'Centro validado correctamente', 
+            centro,
+            emailSent: true
+        });
     } catch (error) {
         console.error('Error al validar centro de trabajo:', error);
         return res.status(500).json({ message: 'Error interno al validar centro de trabajo' });
