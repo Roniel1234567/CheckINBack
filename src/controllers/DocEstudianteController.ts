@@ -98,35 +98,60 @@ export const updateDocEstudiante = async (req: Request, res: Response) => {
         // Enviar correo si se actualizó el estado
         if (req.body.estado_doc_est) {
             const estudianteRepository = AppDataSource.getRepository(Estudiante);
-            const estudiante = await estudianteRepository.findOne({ where: { documento_id_est: doc.est_doc } });
-            if (estudiante && estudiante.nombre_est) {
-                // Aquí debes obtener el correo del estudiante. Si está en contacto_est, hay que hacer join o buscarlo.
-                let correoEst = undefined;
-                if (estudiante.contacto_est && (estudiante.contacto_est as any).email_contacto) {
-                    correoEst = (estudiante.contacto_est as any).email_contacto;
-                }
-                // Si tienes el correo directo en la entidad, usa estudiante.correo_est
-                if (!correoEst && (estudiante as any).correo_est) {
-                    correoEst = (estudiante as any).correo_est;
-                }
-                if (correoEst) {
-                    const documentosAfectados = [
-                        doc.ced_est ? 'Cédula' : null,
-                        doc.cv_doc ? 'Curriculum Vitae' : null,
-                        doc.anexo_iv_doc ? 'Anexo IV' : null,
-                        doc.anexo_v_doc ? 'Anexo V' : null,
-                        doc.acta_nac_doc ? 'Acta de Nacimiento' : null,
-                        doc.ced_padres_doc ? 'Cédula de los Padres' : null,
-                        doc.vac_covid_doc ? 'Vacuna COVID' : null
-                    ].filter(Boolean) as string[];
+            const estudiante = await estudianteRepository.findOne({ 
+                where: { documento_id_est: doc.est_doc },
+                relations: ['contacto_est']  // Aseguramos cargar la relación
+            });
+            
+            if (estudiante?.contacto_est?.email_contacto) {
+                console.log('Preparando envío de email a:', estudiante.contacto_est.email_contacto);
+                const documentosAfectados = [
+                    doc.ced_est ? 'Cédula' : null,
+                    doc.cv_doc ? 'Curriculum Vitae' : null,
+                    doc.anexo_iv_doc ? 'Anexo IV' : null,
+                    doc.anexo_v_doc ? 'Anexo V' : null,
+                    doc.acta_nac_doc ? 'Acta de Nacimiento' : null,
+                    doc.ced_padres_doc ? 'Cédula de los Padres' : null,
+                    doc.vac_covid_doc ? 'Vacuna COVID' : null
+                ].filter(Boolean) as string[];
 
-                    await sendDocumentosEmail(
-                        correoEst,
-                        estudiante.nombre_est,
-                        req.body.estado_doc_est.toLowerCase() as 'aprobados' | 'rechazados' | 'vistos',
-                        documentosAfectados
-                    );
+                console.log('Documentos afectados:', documentosAfectados);
+                
+                // Convertir el estado al formato esperado por el servicio de email
+                let estadoEmail: 'aprobados' | 'rechazados' | 'vistos' | 'pendientes';
+                switch (req.body.estado_doc_est) {
+                    case EstadoDocumento.APROBADO:
+                        estadoEmail = 'aprobados';
+                        break;
+                    case EstadoDocumento.RECHAZADO:
+                        estadoEmail = 'rechazados';
+                        break;
+                    case EstadoDocumento.PENDIENTE:
+                        estadoEmail = 'pendientes';
+                        break;
+                    case EstadoDocumento.VISTO:
+                    default:
+                        estadoEmail = 'vistos';
+                        break;
                 }
+
+                console.log('Estado para email:', estadoEmail);
+
+                // Enviar la notificación directamente
+                const resultado = await sendDocumentosEmail(
+                    estudiante.contacto_est.email_contacto,
+                    estudiante.nombre_est,
+                    estadoEmail,
+                    documentosAfectados
+                );
+
+                if (!resultado.success) {
+                    console.error('Error al enviar la notificación por email:', resultado.error);
+                } else {
+                    console.log('Email enviado exitosamente');
+                }
+            } else {
+                console.log('No se encontró email de contacto para el estudiante:', doc.est_doc);
             }
         }
 
