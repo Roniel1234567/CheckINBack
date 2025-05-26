@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
-import { DocEstudiante } from '../models/DocEstudiante';
+import { DocEstudiante, EstadoDocumento } from '../models/DocEstudiante';
+import { Estudiante } from '../models/Estudiante';
+import { sendDocumentosEmail } from '../services/emailService';
 
 const docEstudianteRepository = AppDataSource.getRepository(DocEstudiante);
 
@@ -54,6 +56,9 @@ export const createDocEstudiante = async (req: Request, res: Response) => {
         if (data.estudiante) {
             data.estudiante = { documento_id_est: data.estudiante };
         }
+        // Asignar estado pendiente por defecto
+        data.estado_doc_est = EstadoDocumento.PENDIENTE;
+        
         const nuevoDoc = docEstudianteRepository.create(data);
         await docEstudianteRepository.save(nuevoDoc);
         return res.status(201).json(nuevoDoc);
@@ -80,10 +85,51 @@ export const updateDocEstudiante = async (req: Request, res: Response) => {
             if (files.vac_covid_doc_file) doc.vac_covid_doc = files.vac_covid_doc_file[0].buffer;
         }
 
+        // Validar estado si se está actualizando
+        if (req.body.estado_doc_est && !Object.values(EstadoDocumento).includes(req.body.estado_doc_est)) {
+            return res.status(400).json({ message: 'Estado de documento no válido' });
+        }
+
         // Si quieres, puedes seguir usando merge para otros campos del body
         docEstudianteRepository.merge(doc, req.body);
 
         await docEstudianteRepository.save(doc);
+
+        // Enviar correo si se actualizó el estado
+        if (req.body.estado_doc_est) {
+            const estudianteRepository = AppDataSource.getRepository(Estudiante);
+            const estudiante = await estudianteRepository.findOne({ where: { documento_id_est: doc.est_doc } });
+            if (estudiante && estudiante.nombre_est) {
+                // Aquí debes obtener el correo del estudiante. Si está en contacto_est, hay que hacer join o buscarlo.
+                let correoEst = undefined;
+                if (estudiante.contacto_est && (estudiante.contacto_est as any).email_contacto) {
+                    correoEst = (estudiante.contacto_est as any).email_contacto;
+                }
+                // Si tienes el correo directo en la entidad, usa estudiante.correo_est
+                if (!correoEst && (estudiante as any).correo_est) {
+                    correoEst = (estudiante as any).correo_est;
+                }
+                if (correoEst) {
+                    const documentosAfectados = [
+                        doc.ced_est ? 'Cédula' : null,
+                        doc.cv_doc ? 'Curriculum Vitae' : null,
+                        doc.anexo_iv_doc ? 'Anexo IV' : null,
+                        doc.anexo_v_doc ? 'Anexo V' : null,
+                        doc.acta_nac_doc ? 'Acta de Nacimiento' : null,
+                        doc.ced_padres_doc ? 'Cédula de los Padres' : null,
+                        doc.vac_covid_doc ? 'Vacuna COVID' : null
+                    ].filter(Boolean) as string[];
+
+                    await sendDocumentosEmail(
+                        correoEst,
+                        estudiante.nombre_est,
+                        req.body.estado_doc_est.toLowerCase() as 'aprobados' | 'rechazados' | 'vistos',
+                        documentosAfectados
+                    );
+                }
+            }
+        }
+
         return res.json(doc);
     } catch (error) {
         return res.status(500).json({ message: 'Error al actualizar el documento de estudiante' });

@@ -119,4 +119,53 @@ export const sendPasswordResetEmail = async (to: string, resetToken: string): Pr
     console.error('Error al enviar el email:', error);
     return false;
   }
+};
+
+// Notificar al estudiante sobre el estado de sus documentos
+export const sendDocumentosEmail = async (
+  correoEstudiante: string,
+  nombreEstudiante: string,
+  estado: 'aprobados' | 'rechazados' | 'vistos',
+  documentosAfectados: string[]
+): Promise<boolean> => {
+  try {
+    let estadoTexto = '';
+    let color = '#2196F3';
+    if (estado === 'aprobados') {
+      estadoTexto = 'aprobados';
+      color = '#4CAF50';
+    } else if (estado === 'rechazados') {
+      estadoTexto = 'rechazados';
+      color = '#F44336';
+    } else {
+      estadoTexto = 'vistos';
+      color = '#FFC107';
+    }
+
+    const mailOptions = {
+      from: 'Sistema de Pasantías <ronielrodriguezcolon@gmail.com>',
+      to: correoEstudiante,
+      subject: `Documentos ${estadoTexto} - CHECKINTIN`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: ${color};">¡Hola, ${nombreEstudiante}!</h2>
+          <p>Te informamos que los siguientes documentos han sido <strong style="color: ${color}; text-transform: uppercase;">${estadoTexto}</strong>:</p>
+          <ul>
+            ${documentosAfectados.map(doc => `<li>${doc}</li>`).join('')}
+          </ul>
+          <p>Por favor, revisa la plataforma para más detalles.</p>
+          <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+            <p style="margin: 0;">Este es un mensaje automático de CHECKINTIN - IPISA.</p>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email de documentos enviado:', info.response);
+    return true;
+  } catch (error) {
+    console.error('Error al enviar el email de documentos:', error);
+    return false;
+  }
 }; 

@@ -1,6 +1,13 @@
 import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Estudiante } from './Estudiante';
 
+export enum EstadoDocumento {
+    VISTO = 'Visto',
+    APROBADO = 'Aprobado',
+    RECHAZADO = 'Rechazado',
+    PENDIENTE = 'Pendiente'
+}
+
 @Entity('doc_estudiante')
 export class DocEstudiante {
   @PrimaryColumn({ name: 'est_doc', type: 'varchar', length: 20 })
@@ -30,4 +37,12 @@ export class DocEstudiante {
 
   @Column({ type: 'bytea', name: 'vac_covid_doc', nullable: true })
   vac_covid_doc?: Buffer;
+
+  @Column({ 
+    type: 'enum',
+    enum: EstadoDocumento,
+    name: 'estado_doc_est',
+    default: EstadoDocumento.PENDIENTE
+  })
+  estado_doc_est!: EstadoDocumento;
 }
