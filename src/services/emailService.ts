@@ -171,4 +171,42 @@ export const sendDocumentosEmail = async (
         console.error('Error al enviar el email de documentos:', error);
         return { success: false, error };
     }
+};
+
+export const sendComentarioEmail = async (
+    correoEstudiante: string,
+    nombreEstudiante: string,
+    nombreDocumento: string,
+    comentario: string
+): Promise<{ success: boolean; error?: any }> => {
+    try {
+        const mailOptions = {
+            from: 'Sistema de Pasantías <ronielrodriguezcolon@gmail.com>',
+            to: correoEstudiante,
+            subject: `Nuevo comentario sobre tu documento - ${nombreDocumento}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                    <h2 style="color: #1a237e;">¡Hola, ${nombreEstudiante}!</h2>
+                    <p>Has recibido un nuevo comentario sobre tu documento: <strong>${nombreDocumento}</strong></p>
+                    
+                    <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                        <p style="margin: 0;"><strong>Comentario:</strong></p>
+                        <p style="margin: 10px 0;">${comentario}</p>
+                    </div>
+
+                    <p>Por favor, revisa la plataforma para más detalles.</p>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                        <p style="margin: 0;">Este es un mensaje automático de CHECKINTIN - IPISA.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        return { success: true };
+    } catch (error) {
+        console.error('Error al enviar el email de comentario:', error);
+        return { success: false, error };
+    }
 }; 

@@ -6,7 +6,8 @@ import {
     updateDocEstudiante,
     deleteDocEstudiante,
     getArchivoEstudiante,
-    getDocEstudianteByDocumento
+    getDocEstudianteByDocumento,
+    enviarComentarioEmail
 } from '../controllers/DocEstudianteController';
 import multer from 'multer';
 
@@ -55,6 +56,11 @@ router.delete('/:id', async (req: Request, res: Response) => {
 // Endpoint para descargar/visualizar un archivo específico
 router.get('/:id/archivo/:tipo', async (req: Request, res: Response) => {
     await getArchivoEstudiante(req, res);
+});
+
+// Ruta para enviar comentarios por email
+router.post('/comentario-email', async (req: Request, res: Response) => {
+    await enviarComentarioEmail(req, res);
 });
 
 export default router;

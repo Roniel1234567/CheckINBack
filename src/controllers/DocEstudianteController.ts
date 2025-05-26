@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { DocEstudiante, EstadoDocumento } from '../models/DocEstudiante';
 import { Estudiante } from '../models/Estudiante';
-import { sendDocumentosEmail } from '../services/emailService';
+import { sendDocumentosEmail, sendComentarioEmail } from '../services/emailService';
 
 const docEstudianteRepository = AppDataSource.getRepository(DocEstudiante);
 
@@ -199,5 +199,42 @@ export const getArchivoEstudiante = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error al obtener archivo:', error);
         return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
+
+export const enviarComentarioEmail = async (req: Request, res: Response) => {
+    try {
+        const { correoEstudiante, nombreEstudiante, nombreDocumento, comentario } = req.body;
+
+        if (!correoEstudiante || !nombreEstudiante || !nombreDocumento || !comentario) {
+            return res.status(400).json({ 
+                message: 'Faltan datos requeridos para enviar el comentario' 
+            });
+        }
+
+        const resultado = await sendComentarioEmail(
+            correoEstudiante,
+            nombreEstudiante,
+            nombreDocumento,
+            comentario
+        );
+
+        if (!resultado.success) {
+            return res.status(500).json({ 
+                message: 'Error al enviar el comentario por email' 
+            });
+        }
+
+        return res.json({ 
+            message: 'Comentario enviado correctamente',
+            success: true 
+        });
+
+    } catch (error) {
+        console.error('Error al enviar comentario:', error);
+        return res.status(500).json({ 
+            message: 'Error interno al procesar el comentario',
+            error: error instanceof Error ? error.message : 'Error desconocido'
+        });
     }
 }; 
