@@ -9,15 +9,27 @@ import { sendPasswordResetEmail } from '../services/emailService';
 // Controlador de login
 export const loginController: RequestHandler = async (req: Request, res: Response): Promise<void> => {
   const { dato_usuario, contrasena_usuario, email } = req.body;
-  let loginIdentifier = dato_usuario;
+  
+  // Si dato_usuario parece ser un email, usarlo como email
+  const isEmail = dato_usuario?.includes('@');
+  const emailToCheck = email || (isEmail ? dato_usuario : null);
+  const userIdentifier = isEmail ? null : dato_usuario;
+
+  console.log('Datos recibidos:', { 
+    dato_usuario, 
+    email, 
+    emailToCheck,
+    userIdentifier,
+    isEmail 
+  });
 
   try {
     const userRepository = AppDataSource.getRepository(Usuario);
     let user = null;
     
-    // Si proporcionaron un email específicamente o el dato_usuario parece ser un email
-    if (email || (loginIdentifier && loginIdentifier.includes('@'))) {
-      const emailToCheck = email || loginIdentifier;
+    // Si tenemos un email para buscar
+    if (emailToCheck) {
+      console.log('Buscando por email:', emailToCheck);
       
       // Primero buscar en la tabla usuario por email
       user = await userRepository.findOne({ 
@@ -25,52 +37,109 @@ export const loginController: RequestHandler = async (req: Request, res: Respons
         relations: ['rol']
       });
       
+      console.log('Resultado búsqueda en usuario:', user);
+      
       // Si no lo encuentra, buscar en estudiantes con contacto que tenga ese email
       if (!user) {
         const estudiantesQuery = `
-          SELECT u.* FROM usuario u
+          SELECT DISTINCT u.* 
+          FROM usuario u
           INNER JOIN estudiante e ON e.usuario_est = u.id_usu
           INNER JOIN contacto c ON e.contacto_est = c.id_contacto
-          WHERE c.email_contacto = $1
+          WHERE LOWER(c.email_contacto) = LOWER($1)
         `;
         
         const estudiantes = await AppDataSource.query(estudiantesQuery, [emailToCheck]);
+        console.log('Resultado búsqueda en estudiantes:', estudiantes);
         
         if (estudiantes && estudiantes.length > 0) {
           user = await userRepository.findOne({
             where: { id_usuario: estudiantes[0].id_usu },
             relations: ['rol']
           });
+          console.log('Usuario encontrado por estudiante:', user);
         } else {
           // Buscar en centros de trabajo
           const centrosQuery = `
-            SELECT u.* FROM usuario u
+            SELECT DISTINCT u.* 
+            FROM usuario u
             INNER JOIN centro_trabajo ct ON ct.id_usu = u.id_usu
             INNER JOIN contacto c ON ct.contacto_centro = c.id_contacto
-            WHERE c.email_contacto = $1
+            WHERE LOWER(c.email_contacto) = LOWER($1)
           `;
           
           const centros = await AppDataSource.query(centrosQuery, [emailToCheck]);
+          console.log('Resultado búsqueda en centros:', centros);
           
           if (centros && centros.length > 0) {
             user = await userRepository.findOne({
               where: { id_usuario: centros[0].id_usu },
               relations: ['rol']
             });
+            console.log('Usuario encontrado por centro:', user);
+          } else {
+            // Buscar en tutores
+            const tutoresQuery = `
+              SELECT DISTINCT u.* 
+              FROM usuario u
+              INNER JOIN tutor t ON t.usuario_tutor = u.id_usu
+              INNER JOIN contacto c ON t.contacto_tutor = c.id_contacto
+              WHERE LOWER(c.email_contacto) = LOWER($1)
+            `;
+            
+            const tutores = await AppDataSource.query(tutoresQuery, [emailToCheck]);
+            console.log('Resultado búsqueda en tutores:', tutores);
+            
+            if (tutores && tutores.length > 0) {
+              user = await userRepository.findOne({
+                where: { id_usuario: tutores[0].id_usu },
+                relations: ['rol']
+              });
+              console.log('Usuario encontrado por tutor:', user);
+            } else {
+              // Buscar en administradores
+              const adminsQuery = `
+                SELECT DISTINCT u.* 
+                FROM usuario u
+                INNER JOIN administrador a ON a.usuario_adm = u.id_usu
+                INNER JOIN contacto c ON a.contacto_adm = c.id_contacto
+                WHERE LOWER(c.email_contacto) = LOWER($1)
+              `;
+              
+              const admins = await AppDataSource.query(adminsQuery, [emailToCheck]);
+              console.log('Resultado búsqueda en administradores:', admins);
+              
+              if (admins && admins.length > 0) {
+                user = await userRepository.findOne({
+                  where: { id_usuario: admins[0].id_usu },
+                  relations: ['rol']
+                });
+                console.log('Usuario encontrado por administrador:', user);
+              }
+            }
           }
         }
       }
     } 
-    // Búsqueda por nombre de usuario
-    else {
+    // Si no hay email, buscar por dato_usuario
+    else if (userIdentifier) {
+      console.log('Buscando por dato_usuario:', userIdentifier);
       user = await userRepository.findOne({ 
-        where: { dato_usuario: loginIdentifier },
+        where: { dato_usuario: userIdentifier },
         relations: ['rol']
       });
+      console.log('Resultado búsqueda por dato_usuario:', user);
     }
 
     if (!user) {
+      console.log('No se encontró el usuario');
       res.status(400).json({ message: 'Usuario no encontrado' });
+      return;
+    }
+
+    // Verificar si el usuario está activo
+    if (user.estado_usuario !== 'Activo') {
+      res.status(403).json({ message: 'Usuario inactivo o eliminado' });
       return;
     }
 
@@ -81,19 +150,22 @@ export const loginController: RequestHandler = async (req: Request, res: Respons
     }
 
     const token = jwt.sign(
-      { id: user.id_usuario }, 
+      { 
+        id: user.id_usuario,
+        rol: user.rol_usuario,
+        estado: user.estado_usuario
+      }, 
       process.env.JWT_SECRET as string, 
       { expiresIn: '1h' }
     );
 
     res.status(200).json({
-      message: 'Login exitoso',
       token,
       user: {
-        id: user.id_usuario,
+        id_usuario: user.id_usuario,
         dato_usuario: user.dato_usuario,
         rol: user.rol_usuario,
-        estado: user.estado_usuario
+        estado_usuario: user.estado_usuario
       }
     });
   } catch (err) {
@@ -137,7 +209,7 @@ export const registerController: RequestHandler = async (req: Request, res: Resp
     const newUser = userRepository.create({
       dato_usuario,
       contrasena_usuario: hashedPassword,
-      rol_usuario,
+      rol_usuario: rol_usuario,
       estado_usuario: 'Activo',
       email_usuario
     });
@@ -145,19 +217,22 @@ export const registerController: RequestHandler = async (req: Request, res: Resp
     const savedUser = await userRepository.save(newUser);
 
     const token = jwt.sign(
-      { id: savedUser.id_usuario },
+      { 
+        id: savedUser.id_usuario,
+        rol: savedUser.rol_usuario,
+        estado: savedUser.estado_usuario
+      },
       process.env.JWT_SECRET as string,
       { expiresIn: '1h' }
     );
 
     res.status(201).json({
-      message: 'Usuario registrado exitosamente',
       token,
       user: {
-        id: savedUser.id_usuario,
+        id_usuario: savedUser.id_usuario,
         dato_usuario: savedUser.dato_usuario,
         rol: savedUser.rol_usuario,
-        estado: savedUser.estado_usuario
+        estado_usuario: savedUser.estado_usuario
       }
     });
   } catch (err) {
@@ -206,10 +281,11 @@ export const forgotPasswordController: RequestHandler = async (req: Request, res
         try {
           // Buscar en Estudiante con su usuario asociado - usando consulta SQL directa
           const estudiantesQuery = `
-            SELECT u.* FROM usuario u
+            SELECT DISTINCT u.* 
+            FROM usuario u
             INNER JOIN estudiante e ON e.usuario_est = u.id_usu
             INNER JOIN contacto c ON e.contacto_est = c.id_contacto
-            WHERE c.email_contacto = $1
+            WHERE LOWER(c.email_contacto) = LOWER($1)
           `;
           
           const estudiantesResult = await AppDataSource.query(estudiantesQuery, [email]);
@@ -222,10 +298,11 @@ export const forgotPasswordController: RequestHandler = async (req: Request, res
           } else {
             // Buscar en Centro de Trabajo con SQL directo
             const centrosQuery = `
-              SELECT u.* FROM usuario u
+              SELECT DISTINCT u.* 
+              FROM usuario u
               INNER JOIN centro_trabajo ct ON ct.id_usu = u.id_usu
               INNER JOIN contacto c ON ct.contacto_centro = c.id_contacto
-              WHERE c.email_contacto = $1
+              WHERE LOWER(c.email_contacto) = LOWER($1)
             `;
             
             const centrosResult = await AppDataSource.query(centrosQuery, [email]);

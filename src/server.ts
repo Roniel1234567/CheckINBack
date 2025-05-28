@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { AppDataSource } from './data-source';
 import { Usuario } from './models/User';
-import { UserRole } from './types/roles';
 
 // Auth and User routes
 import authRoutes from './routes/authRoutes';
