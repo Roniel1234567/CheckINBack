@@ -153,7 +153,8 @@ export const loginController: RequestHandler = async (req: Request, res: Respons
       { 
         id: user.id_usuario,
         rol: user.rol_usuario,
-        estado: user.estado_usuario
+        estado: user.estado_usuario,
+        dato_usuario: user.dato_usuario
       }, 
       process.env.JWT_SECRET as string, 
       { expiresIn: '1h' }
