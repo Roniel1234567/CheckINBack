@@ -10,6 +10,7 @@ export const getAllPasantias = async (req: Request, res: Response) => {
         const pasantias = await pasantiaRepository
             .createQueryBuilder('pasantia')
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .innerJoinAndSelect('estudiante.usuario_est', 'usuario_est')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
             .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
@@ -18,7 +19,9 @@ export const getAllPasantias = async (req: Request, res: Response) => {
                 'supervisor.nombre_sup',
                 'supervisor.apellido_sup',
                 'supervisor.creacion_sup',
-                'supervisor.contacto_sup'
+                'supervisor.contacto_sup',
+                'usuario_est.id_usuario',
+                'usuario_est.estado_usuario'
             ])
             .getMany();
 
@@ -36,6 +39,7 @@ export const getPasantiaById = async (req: Request, res: Response) => {
         const pasantia = await pasantiaRepository
             .createQueryBuilder('pasantia')
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .innerJoinAndSelect('estudiante.usuario_est', 'usuario_est')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
             .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
@@ -44,7 +48,9 @@ export const getPasantiaById = async (req: Request, res: Response) => {
                 'supervisor.nombre_sup',
                 'supervisor.apellido_sup',
                 'supervisor.creacion_sup',
-                'supervisor.contacto_sup'
+                'supervisor.contacto_sup',
+                'usuario_est.id_usuario',
+                'usuario_est.estado_usuario'
             ])
             .where('pasantia.id_pas = :id', { id: parseInt(id) })
             .getOne();
@@ -64,6 +70,7 @@ export const getPasantiasPendientesEvaluacion = async (req: Request, res: Respon
         const pasantias = await pasantiaRepository
             .createQueryBuilder('pasantia')
             .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .innerJoinAndSelect('estudiante.usuario_est', 'usuario_est')
             .innerJoinAndSelect('pasantia.centro_pas', 'centro')
             .innerJoin('pasantia.supervisor_pas', 'supervisor')
             .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
@@ -72,10 +79,14 @@ export const getPasantiasPendientesEvaluacion = async (req: Request, res: Respon
                 'supervisor.nombre_sup',
                 'supervisor.apellido_sup',
                 'supervisor.creacion_sup',
-                'supervisor.contacto_sup'
+                'supervisor.contacto_sup',
+                'usuario_est.id_usuario',
+                'usuario_est.estado_usuario'
             ])
-            .where('pasantia.estado_pas = :estado', { estado: EstadoPasantia.EN_PROCESO })
-            .orWhere('pasantia.estado_pas = :estado2', { estado2: EstadoPasantia.TERMINADA })
+            .where('(pasantia.estado_pas = :enProceso OR pasantia.estado_pas = :terminada)', {
+                enProceso: EstadoPasantia.EN_PROCESO,
+                terminada: EstadoPasantia.TERMINADA
+            })
             .getMany();
             
         console.log('Pasantías encontradas:', pasantias.length);
@@ -131,5 +142,37 @@ export const deletePasantia = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error al eliminar la pasantía:', error);
         return res.status(500).json({ message: 'Error al eliminar la pasantía' });
+    }
+};
+
+export const getPasantiaByEstudianteId = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        const pasantia = await pasantiaRepository
+            .createQueryBuilder('pasantia')
+            .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .innerJoinAndSelect('estudiante.usuario_est', 'usuario_est')
+            .innerJoinAndSelect('pasantia.centro_pas', 'centro')
+            .innerJoin('pasantia.supervisor_pas', 'supervisor')
+            .leftJoinAndSelect('pasantia.plaza_pas', 'plaza_pas')
+            .addSelect([
+                'supervisor.id_sup',
+                'supervisor.nombre_sup',
+                'supervisor.apellido_sup',
+                'supervisor.creacion_sup',
+                'supervisor.contacto_sup',
+                'usuario_est.id_usuario',
+                'usuario_est.estado_usuario'
+            ])
+            .where('estudiante.documento_id_est = :id', { id })
+            .andWhere('pasantia.estado_pas != :estado', { estado: EstadoPasantia.CANCELADA })
+            .getOne();
+        
+        if (!pasantia) return res.status(404).json({ message: 'Pasantía no encontrada para este estudiante' });
+        return res.json(pasantia);
+    } catch (error) {
+        console.error('Error al obtener la pasantía del estudiante:', error);
+        return res.status(500).json({ message: 'Error al obtener la pasantía del estudiante' });
     }
 };

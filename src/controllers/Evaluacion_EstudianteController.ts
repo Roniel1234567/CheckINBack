@@ -76,3 +76,20 @@ export const deleteEvaluacionEstudiante = async (req: Request, res: Response) =>
         return res.status(500).json({ message: 'Error al eliminar la evaluación de estudiante' });
     }
 };
+
+export const getEvaluacionesPorPasantia = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const evaluaciones = await evaluacionEstudianteRepository
+            .createQueryBuilder('evaluacion')
+            .innerJoinAndSelect('evaluacion.pasantia_eval', 'pasantia')
+            .innerJoinAndSelect('pasantia.estudiante_pas', 'estudiante')
+            .where('pasantia.id_pas = :id', { id: parseInt(id) })
+            .getMany();
+            
+        return res.json(evaluaciones);
+    } catch (error) {
+        console.error('Error al obtener evaluaciones por pasantía:', error);
+        return res.status(500).json({ message: 'Error al obtener evaluaciones por pasantía' });
+    }
+};
