@@ -4,7 +4,8 @@ import {
     getTutorById,
     createTutor,
     updateTutor,
-    deleteTutor 
+    deleteTutor,
+    getTutorByUsuario
 } from '../controllers/TutorController';
 
 const router = Router();
@@ -12,6 +13,11 @@ const router = Router();
 // Get all tutores
 router.get('/', async (req: Request, res: Response) => {
     await getAllTutores(req, res);
+});
+
+// Get tutor by usuario (id_usuario)
+router.get('/usuario/:id_usuario', async (req: Request, res: Response) => {
+    await getTutorByUsuario(req, res);
 });
 
 // Get tutor by ID

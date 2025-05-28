@@ -93,3 +93,26 @@ export const deleteTutor = async (req: Request, res: Response): Promise<Response
         return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+export const getTutorByUsuario = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const id_usuario = parseInt(req.params.id_usuario);
+        if (isNaN(id_usuario)) {
+            return res.status(400).json({ message: 'ID de usuario inválido' });
+        }
+
+        const tutor = await tutorRepository.findOne({
+            where: { usuario_tutor: id_usuario },
+            relations: ['usuario_tutor', 'contacto_tutor', 'taller_tutor']
+        });
+
+        if (!tutor) {
+            return res.status(404).json({ message: 'Tutor no encontrado' });
+        }
+
+        return res.status(200).json(tutor);
+    } catch (error) {
+        console.error('Error al obtener tutor por usuario:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};

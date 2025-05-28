@@ -6,10 +6,16 @@ import {
     updateEstudiante,
     deleteEstudiante,
     updateFecha,
-    updateEstudiantePoliza
+    updateEstudiantePoliza,
+    getEstudianteByUsuarioId
 } from '../controllers/EstudianteController';
 
 const router = Router();
+
+// Ruta para obtener estudiante por id_usuario (debe ir antes de /:id)
+router.get('/by-usuario/:id_usuario', async (req: Request, res: Response) => {
+    await getEstudianteByUsuarioId(req, res);
+});
 
 // Get all estudiantes
 router.get('/', async (req: Request, res: Response) => {
@@ -26,16 +32,6 @@ router.post('/', async (req: Request, res: Response) => {
     await createEstudiante(req, res);
 });
 
-// Ruta para actualizar fechas de pasantía y horas realizadas
-router.put('/:id/fechas', async (req: Request, res: Response) => {
-    await updateFecha(req, res);
-});
-
-// Ruta para actualizar solo la póliza del estudiante
-router.put('/:id/poliza', async (req: Request, res: Response) => {
-    await updateEstudiantePoliza(req, res);
-});
-
 // Update estudiante
 router.put('/:id', async (req: Request, res: Response) => {
     await updateEstudiante(req, res);
@@ -44,6 +40,16 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Delete estudiante
 router.delete('/:id', async (req: Request, res: Response) => {
     await deleteEstudiante(req, res);
+});
+
+// Update fecha pasantia
+router.put('/fecha/:id', async (req: Request, res: Response) => {
+    await updateFecha(req, res);
+});
+
+// Update poliza estudiante
+router.put('/poliza/:id', async (req: Request, res: Response) => {
+    await updateEstudiantePoliza(req, res);
 });
 
 export default router;

@@ -5,10 +5,12 @@ import { DocEstudiante } from '../models/DocEstudiante';
 import { Poliza } from '../models/Poliza';
 import { CentroDeTrabajo } from '../models/CentroDeTrabajo';
 import { Pasantia, EstadoPasantia } from '../models/Pasantia';
+import { Usuario } from '../models/User';
 
 const estudianteRepository = AppDataSource.getRepository(Estudiante);
 const polizaRepository = AppDataSource.getRepository(Poliza);
 const centroTrabajoRepository = AppDataSource.getRepository(CentroDeTrabajo);
+const usuarioRepository = AppDataSource.getRepository(Usuario);
 
 export const getAllEstudiantes = async (_req: Request, res: Response): Promise<Response> => {
     try {
@@ -270,5 +272,28 @@ export const updateFecha = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error al actualizar fechas:', error);
         return res.status(500).json({ message: 'Error interno al actualizar fechas' });
+    }
+};
+
+export const getEstudianteByUsuarioId = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const id_usuario = parseInt(req.params.id_usuario);
+        if (isNaN(id_usuario)) {
+            return res.status(400).json({ message: 'ID de usuario inválido' });
+        }
+
+        const estudiante = await estudianteRepository.findOne({
+            where: { usuario_est: { id_usuario: id_usuario } },
+            relations: ['taller_est', 'usuario_est', 'pasantias']
+        });
+
+        if (!estudiante) {
+            return res.status(404).json({ message: 'Estudiante no encontrado' });
+        }
+
+        return res.status(200).json(estudiante);
+    } catch (error) {
+        console.error('Error al obtener estudiante por id_usuario:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
