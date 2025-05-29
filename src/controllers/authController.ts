@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { AppDataSource } from '../data-source';
 import { Usuario } from '../models/User';
 import { sendPasswordResetEmail } from '../services/emailService';
+import { CentroDeTrabajo } from '../models/CentroDeTrabajo';
 
 // Controlador de login
 export const loginController: RequestHandler = async (req: Request, res: Response): Promise<void> => {
@@ -143,18 +144,19 @@ export const loginController: RequestHandler = async (req: Request, res: Respons
       return;
     }
 
-    const isMatch = await bcrypt.compare(contrasena_usuario, user.contrasena_usuario);
-    if (!isMatch) {
-      res.status(400).json({ message: 'Contraseña incorrecta' });
-      return;
-    }
+    // Buscar el centro de trabajo asociado a este usuario
+    const centro = await AppDataSource.getRepository(CentroDeTrabajo).findOne({
+      where: { usuario: { id_usuario: user.id_usuario } },
+    });
 
+    // Generar el token JWT incluyendo id_centro
     const token = jwt.sign(
       { 
         id: user.id_usuario,
         rol: user.rol_usuario,
         estado: user.estado_usuario,
-        dato_usuario: user.dato_usuario
+        dato_usuario: user.dato_usuario,
+        id_centro: centro ? centro.id_centro : null
       }, 
       process.env.JWT_SECRET as string, 
       { expiresIn: '1h' }

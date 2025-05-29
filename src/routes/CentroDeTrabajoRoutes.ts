@@ -9,7 +9,8 @@ import {
     getCentrosPendientes,
     validarCentro,
     getCentrosAceptados,
-    getCentrosRechazados
+    getCentrosRechazados,
+    getCentroTrabajoPorUsuario
 } from '../controllers/CentroDeTrabajoController';
 
 const router = Router();
@@ -37,6 +38,11 @@ router.get('/sectores/ciudad/:ciudadId', async (req: Request, res: Response) => 
 // Verificar si existe un centro de trabajo con ese nombre
 router.get('/existe-nombre/:nombre', async (req: Request, res: Response) => {
     await existeNombreCentro(req, res);
+});
+
+// Obtener centro de trabajo por usuario
+router.get('/porUsuario/:id_usuario', async (req: Request, res: Response) => {
+    await getCentroTrabajoPorUsuario(req, res);
 });
 
 // Actualizar centro de trabajo por ID

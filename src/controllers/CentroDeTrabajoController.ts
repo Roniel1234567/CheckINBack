@@ -413,3 +413,31 @@ export const getCentrosRechazados = async (_req: Request, res: Response): Promis
         return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+export const getCentroTrabajoPorUsuario = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const id_usuario = parseInt(req.params.id_usuario);
+        if (isNaN(id_usuario)) {
+            return res.status(400).json({ message: 'ID de usuario inválido' });
+        }
+        const centro = await centroTrabajoRepository.findOne({
+            where: { usuario: { id_usuario } },
+            relations: [
+                'direccion_centro',
+                'direccion_centro.sector_dir',
+                'direccion_centro.sector_dir.ciudad',
+                'direccion_centro.sector_dir.ciudad.provincia',
+                'contacto_centro',
+                'usuario',
+                'persona_contacto_empresa'
+            ]
+        });
+        if (!centro) {
+            return res.status(404).json({ message: 'Centro de trabajo no encontrado para este usuario' });
+        }
+        return res.json(centro);
+    } catch (error) {
+        console.error('Error al obtener centro de trabajo por usuario:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};
