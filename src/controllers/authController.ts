@@ -144,6 +144,13 @@ export const loginController: RequestHandler = async (req: Request, res: Respons
       return;
     }
 
+    // Verificar la contraseña usando bcrypt
+    const isMatch = await bcrypt.compare(contrasena_usuario, user.contrasena_usuario);
+    if (!isMatch) {
+      res.status(401).json({ message: 'Credenciales inválidas' });
+      return;
+    }
+
     // Buscar el centro de trabajo asociado a este usuario
     const centro = await AppDataSource.getRepository(CentroDeTrabajo).findOne({
       where: { usuario: { id_usuario: user.id_usuario } },
