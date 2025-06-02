@@ -116,3 +116,21 @@ export const getTutorByUsuario = async (req: Request, res: Response): Promise<Re
         return res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+// Obtener tutores por taller
+export const getTutoresByTaller = async (req: Request, res: Response) => {
+    try {
+        const id_taller = parseInt(req.params.id_taller);
+        if (isNaN(id_taller)) {
+            return res.status(400).json({ message: 'ID de taller inválido' });
+        }
+        const tutores = await tutorRepository.find({
+            where: { taller_tutor: id_taller },
+            relations: ['usuario_tutor', 'contacto_tutor', 'taller_tutor']
+        });
+        return res.status(200).json(tutores);
+    } catch (error) {
+        console.error('Error al obtener tutores por taller:', error);
+        return res.status(500).json({ message: 'Error interno del servidor' });
+    }
+};

@@ -5,7 +5,8 @@ import {
     createTutor,
     updateTutor,
     deleteTutor,
-    getTutorByUsuario
+    getTutorByUsuario,
+    getTutoresByTaller
 } from '../controllers/TutorController';
 
 const router = Router();
@@ -38,6 +39,11 @@ router.put('/:id', async (req: Request, res: Response) => {
 // Delete tutor
 router.delete('/:id', async (req: Request, res: Response) => {
     await deleteTutor(req, res);
+});
+
+// Endpoint para obtener tutores por taller
+router.get('/taller/:id_taller', async (req: Request, res: Response) => {
+    await getTutoresByTaller(req, res);
 });
 
 export default router;
