@@ -209,4 +209,52 @@ export const sendComentarioEmail = async (
         console.error('Error al enviar el email de comentario:', error);
         return { success: false, error };
     }
+};
+
+// Plantilla para email de credenciales
+const credencialesTemplate = (nombreEstudiante: string, usuario: string, contrasena: string) => ({
+    subject: 'Bienvenido a CHECKINTIN - Tus credenciales de acceso',
+    html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #1a237e;">¡Bienvenido a CHECKINTIN, ${nombreEstudiante}! 🎉</h2>
+            
+            <p>Tu cuenta ha sido creada exitosamente en el sistema de pasantías del Instituto Politécnico Industrial de Santiago (IPISA).</p>
+            
+            <div style="margin: 20px 0; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                <p style="margin: 5px 0;"><strong>Tus credenciales de acceso son:</strong></p>
+                <p style="margin: 5px 0;">Usuario: <strong>${usuario}</strong></p>
+                <p style="margin: 5px 0;">Contraseña: <strong>${contrasena}</strong></p>
+            </div>
+
+            <p>Por favor, ingresa a la plataforma y cambia tu contraseña por una de tu preferencia.</p>
+            
+            <div style="margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 5px;">
+                <p style="margin: 0;">Este es un mensaje automático de CHECKINTIN - IPISA.</p>
+                <p style="margin: 5px 0; color: #666;">Por favor, no respondas a este correo.</p>
+            </div>
+        </div>
+    `
+});
+
+export const sendCredencialesEmail = async (
+    correoEstudiante: string,
+    nombreEstudiante: string,
+    usuario: string,
+    contrasena: string
+) => {
+    try {
+        const template = credencialesTemplate(nombreEstudiante, usuario, contrasena);
+
+        await transporter.sendMail({
+            from: '"CHECKINTIN - IPISA" <ronielrodriguezcolon@gmail.com>',
+            to: correoEstudiante,
+            subject: template.subject,
+            html: template.html
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error('Error enviando email de credenciales:', error);
+        return { success: false, error };
+    }
 }; 

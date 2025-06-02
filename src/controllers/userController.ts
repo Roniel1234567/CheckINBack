@@ -84,7 +84,7 @@ export const updateUser = async (req: Request, res: Response): Promise<Response>
         }
 
         // Solo actualiza los campos permitidos explícitamente
-        const { estado_usuario, contrasena_usuario } = req.body;
+        const { estado_usuario, contrasena_usuario, dato_usuario } = req.body;
         let updated = false;
 
         if (estado_usuario !== undefined) {
@@ -95,6 +95,11 @@ export const updateUser = async (req: Request, res: Response): Promise<Response>
         if (contrasena_usuario) {
             const salt = await bcrypt.genSalt(10);
             user.contrasena_usuario = await bcrypt.hash(contrasena_usuario, salt);
+            updated = true;
+        }
+
+        if (dato_usuario) {
+            user.dato_usuario = dato_usuario;
             updated = true;
         }
 

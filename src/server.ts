@@ -7,6 +7,7 @@ import { Usuario } from './models/User';
 // Auth and User routes
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
+import emailRoutes from './routes/emailRoutes';
 
 // Main entity routes
 import actividadRecienteRoutes from './routes/Actividad_recienteRoutes';
@@ -66,6 +67,7 @@ app.get('/api/test', (req, res) => {
 // Auth and User routes
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', userRoutes);
+app.use('/api/email', emailRoutes);
 
 // Main entity routes
 app.use('/api/actividades', actividadRecienteRoutes);
