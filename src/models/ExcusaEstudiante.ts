@@ -25,4 +25,7 @@ export class ExcusaEstudiante {
   @ManyToOne(() => Estudiante, { nullable: false })
   @JoinColumn({ name: 'id_estudiante', referencedColumnName: 'documento_id_est' })
   estudiante!: Estudiante;
+
+  @Column({ type: 'bytea', nullable: true })
+  certificados?: Buffer;
 } 

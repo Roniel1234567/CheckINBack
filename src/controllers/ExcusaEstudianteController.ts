@@ -36,7 +36,11 @@ export const getExcusaEstudianteById = async (req: Request, res: Response) => {
 
 export const createExcusaEstudiante = async (req: Request, res: Response) => {
   try {
-    const nuevaExcusa = excusaEstudianteRepository.create(req.body);
+    const body = req.body;
+    if (body.certificados && typeof body.certificados === 'string') {
+      body.certificados = Buffer.from(body.certificados, 'base64');
+    }
+    const nuevaExcusa = excusaEstudianteRepository.create(body);
     const savedExcusa = await excusaEstudianteRepository.save(nuevaExcusa);
     return res.status(201).json(savedExcusa);
   } catch (error) {
@@ -54,7 +58,11 @@ export const updateExcusaEstudiante = async (req: Request, res: Response) => {
     if (!excusa) {
       return res.status(404).json({ message: 'Excusa no encontrada' });
     }
-    excusaEstudianteRepository.merge(excusa, req.body);
+    const body = req.body;
+    if (body.certificados && typeof body.certificados === 'string') {
+      body.certificados = Buffer.from(body.certificados, 'base64');
+    }
+    excusaEstudianteRepository.merge(excusa, body);
     const updatedExcusa = await excusaEstudianteRepository.save(excusa);
     return res.status(200).json(updatedExcusa);
   } catch (error) {
