@@ -51,14 +51,23 @@ dotenv.config();
 
 const app = express();
 
+
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'development' ? true : 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'development' 
+    ? true 
+    : [
+        'http://localhost:5173',
+        'https://check-in-front-co7uw4irt-roniel1234567s-projects.vercel.app',
+        'https://checkinback-production.up.railway.app'
+      ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Test route
 app.get('/api/test', (req, res) => {
