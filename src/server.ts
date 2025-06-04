@@ -58,6 +58,8 @@ app.use(cors({
     ? true 
     : [
         'http://localhost:5173',
+        'https://check-in-front.vercel.app',
+        'https://check-in-front-git-ronielfront-roniel1234567s-projects.vercel.app',
         'https://check-in-front-co7uw4irt-roniel1234567s-projects.vercel.app',
         'https://checkinback-production.up.railway.app'
       ],
