@@ -75,23 +75,43 @@ export const sendValidacionEmail = async (
     emailDestino: string,
     nombreEmpresa: string,
     esAceptada: boolean
-) => {
+): Promise<{ success: boolean; error?: any }> => {
     try {
+        console.log('Iniciando envío de email de validación:', {
+            emailDestino,
+            nombreEmpresa,
+            esAceptada
+        });
+
         const template = esAceptada 
             ? emailTemplates.empresaAceptada(nombreEmpresa)
             : emailTemplates.empresaRechazada(nombreEmpresa);
 
-        await transporter.sendMail({
-            from: '"CHECKINTIN - IPISA" <noreply@checkintin.com>',
+        const mailOptions = {
+            from: '"CHECKINTIN - IPISA" <ronielrodriguezcolon@gmail.com>',
             to: emailDestino,
             subject: template.subject,
             html: template.html
-        });
+        };
+
+        console.log('Intentando enviar email con opciones:', mailOptions);
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email de validación enviado exitosamente:', info);
 
         return { success: true };
     } catch (error) {
-        console.error('Error enviando email:', error);
-        return { success: false, error };
+        const err = error as Error;
+        console.error('Error detallado al enviar el email de validación:', {
+            message: err.message || 'Error desconocido',
+            stack: err.stack || 'No stack trace disponible',
+            code: (error as any).code || 'No error code',
+            response: (error as any).response || 'No response data'
+        });
+        return { 
+            success: false, 
+            error: err.message || 'Error al enviar el email de validación'
+        };
     }
 };
 
@@ -188,7 +208,7 @@ export const sendDocumentosEmail = async (
         });
         return { 
             success: false, 
-            error: err.message || 'Error al enviar el email'
+            error: err.message || 'Error al enviar el email de documentos'
         };
     }
 };
