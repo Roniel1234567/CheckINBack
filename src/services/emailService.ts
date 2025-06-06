@@ -129,6 +129,13 @@ export const sendDocumentosEmail = async (
     documentosAfectados: string[]
 ): Promise<{ success: boolean; error?: any }> => {
     try {
+        console.log('Iniciando envío de email con datos:', {
+            correoEstudiante,
+            nombreEstudiante,
+            estado,
+            documentosAfectados
+        });
+
         let estadoTexto = '';
         let color = '#2196F3';
         
@@ -165,11 +172,24 @@ export const sendDocumentosEmail = async (
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        console.log('Intentando enviar email con opciones:', mailOptions);
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email enviado exitosamente:', info);
+        
         return { success: true };
     } catch (error) {
-        console.error('Error al enviar el email de documentos:', error);
-        return { success: false, error };
+        const err = error as Error;
+        console.error('Error detallado al enviar el email de documentos:', {
+            message: err.message || 'Error desconocido',
+            stack: err.stack || 'No stack trace disponible',
+            code: (error as any).code || 'No error code',
+            response: (error as any).response || 'No response data'
+        });
+        return { 
+            success: false, 
+            error: err.message || 'Error al enviar el email'
+        };
     }
 };
 
