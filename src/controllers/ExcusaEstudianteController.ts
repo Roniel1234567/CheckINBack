@@ -4,11 +4,16 @@ import { ExcusaEstudiante } from '../models/ExcusaEstudiante';
 
 const excusaEstudianteRepository = AppDataSource.getRepository(ExcusaEstudiante);
 
-export const getAllExcusasEstudiante = async (_req: Request, res: Response) => {
+export const getAllExcusasEstudiante = async (req: Request, res: Response) => {
   try {
-    const excusas = await excusaEstudianteRepository.find({
-      relations: ['pasantia', 'tutor', 'estudiante']
-    });
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const options: any = {
+      relations: ['pasantia', 'tutor', 'estudiante'],
+      order: { fecha_creacion_excusa: 'DESC' }
+    };
+    if (limit) options.take = limit;
+
+    const excusas = await excusaEstudianteRepository.find(options);
     return res.status(200).json(excusas);
   } catch (error) {
     return res.status(500).json({ message: 'Error al obtener las excusas' });
@@ -83,5 +88,41 @@ export const deleteExcusaEstudiante = async (req: Request, res: Response) => {
     return res.status(204).send();
   } catch (error) {
     return res.status(500).json({ message: 'Error al eliminar la excusa' });
+  }
+};
+
+export const getExcusasByEstudiante = async (req: Request, res: Response) => {
+  try {
+    const documento_id_est = req.params.documento_id_est;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const options: any = {
+      where: { estudiante: documento_id_est },
+      relations: ['pasantia', 'tutor', 'estudiante'],
+      order: { fecha_creacion_excusa: 'DESC' }
+    };
+    if (limit) options.take = limit;
+
+    const excusas = await excusaEstudianteRepository.find(options);
+    return res.status(200).json(excusas);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al obtener las excusas del estudiante' });
+  }
+};
+
+export const getExcusasByTutor = async (req: Request, res: Response) => {
+  try {
+    const id_tutor = parseInt(req.params.id_tutor);
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const options: any = {
+      where: { tutor: id_tutor },
+      relations: ['pasantia', 'tutor', 'estudiante'],
+      order: { fecha_creacion_excusa: 'DESC' }
+    };
+    if (limit) options.take = limit;
+
+    const excusas = await excusaEstudianteRepository.find(options);
+    return res.status(200).json(excusas);
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al obtener las excusas del tutor' });
   }
 }; 
